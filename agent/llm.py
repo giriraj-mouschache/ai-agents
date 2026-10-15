@@ -105,7 +105,7 @@ class LLMClient:
         user: str,
         json_mode: bool = True,
         temperature: float = 0.2,
-        max_tokens: int = 2048,
+        max_tokens: int = 4096,  # headroom: "thinking" models spend part of this budget before answering
     ) -> str:
         last: Exception | None = None
         for backend in self.backends:

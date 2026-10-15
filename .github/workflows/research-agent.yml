@@ -10,6 +10,10 @@ on:
         description: "Dry run (build the digest as an artifact, do not email or save state)"
         type: boolean
         default: false
+      test_email_to:
+        description: "Send a one-off demo email to this address instead of running the agent (leave empty for a normal run)"
+        type: string
+        default: ""
 
 permissions:
   contents: write # lets the job commit state/seen.json back to the repo
@@ -33,7 +37,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Send demo email
+        if: ${{ inputs.test_email_to != '' }}
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TEST_EMAIL_TO: ${{ inputs.test_email_to }}
+        run: python -m agent.main --test-email --to "$TEST_EMAIL_TO"
+
       - name: Run agent
+        if: ${{ inputs.test_email_to == '' }}
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
@@ -52,7 +68,7 @@ jobs:
           path: out/
 
       - name: Commit state
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.dry_run && inputs.test_email_to == '' }}
         run: |
           git config user.name "research-agent[bot]"
           git config user.email "research-agent@users.noreply.github.com"

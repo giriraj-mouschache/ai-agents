@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,12 +12,51 @@ from pathlib import Path
 from .config import load_config
 from .emailer import Digest, make_subject, render_html, render_text, send_email
 from .llm import LLMClient
-from .research import TopicResult, make_tldr, run_topic
+from .research import Item, TopicResult, make_tldr, run_topic
 from .store import SeenStore
 
 log = logging.getLogger("agent")
 
 IST = timezone(timedelta(hours=5, minutes=30))
+EMAIL_RE = re.compile(r"^[^@\s,;<>\"']+@[^@\s,;<>\"']+\.[^@\s,;<>\"']+$")
+
+
+def _send_demo(args) -> int:
+    """Send a sample digest (plus an LLM health check) to verify Gmail and the LLM key end to end."""
+    env = dict(os.environ)
+    to = (args.to or "").strip()
+    if to:
+        if not EMAIL_RE.match(to):
+            log.error("--to is not a valid email address")
+            return 2
+        env["MAIL_TO"] = to
+
+    cfg = load_config(args.config)
+    llm = LLMClient(cfg)
+    if llm.available:
+        try:
+            llm.chat("You are a connectivity check.", "Reply with the single word OK.", json_mode=False, max_tokens=64)
+            check = f"LLM check passed: the API answered ({', '.join(b.name for b in llm.backends)} configured)."
+        except Exception as exc:  # report any failure in the email instead of crashing
+            check = f"LLM check FAILED: {str(exc)[:160]}"
+    else:
+        check = "LLM check skipped: no LLM API key found."
+
+    sample = [
+        Item("Demo", "Sample finding: how an item looks in your digest", "https://example.com/sample-1",
+             "This is placeholder text. Real digests contain 2-3 sentence summaries of pages the agent read.",
+             "Real digests explain why each item matters for the topic goal you set.", 9),
+        Item("Demo", "Sample finding: items below your min_score are left out", "https://example.com/sample-2",
+             "Only items the LLM scores at or above min_score make it into the email.", "", 7),
+    ]
+    digest = Digest(
+        date=datetime.now(IST).strftime("%Y-%m-%d"),
+        tldr=["Demo email from your research agent: Gmail SMTP works.", check],
+        sections=[TopicResult("Sample topic (demo, not real results)", sample)],
+    )
+    send_email("Research agent - demo email", render_html(digest), render_text(digest), env=env)
+    log.info("Demo email sent. %s", check)
+    return 0
 
 
 def _load_dotenv(path: str = ".env") -> None:
@@ -37,17 +77,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", default="config.yaml")
     parser.add_argument("--topic", action="append", help="Only run topics with this name (repeatable)")
     parser.add_argument("--dry-run", action="store_true", help="Write out/digest.html instead of emailing; state is not saved")
-    parser.add_argument("--test-email", action="store_true", help="Send a short test email and exit")
+    parser.add_argument("--test-email", action="store_true", help="Send a sample demo email (with an LLM health check) and exit")
+    parser.add_argument("--to", help="Recipient for --test-email (defaults to MAIL_TO or GMAIL_USER)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     _load_dotenv()
 
     if args.test_email:
-        digest = Digest(date=datetime.now(IST).strftime("%Y-%m-%d"), tldr=["Test email from your research agent. SMTP works."])
-        send_email("Research agent - test email", render_html(digest), render_text(digest))
-        log.info("Test email sent")
-        return 0
+        return _send_demo(args)
 
     cfg = load_config(args.config)
     llm = LLMClient(cfg)

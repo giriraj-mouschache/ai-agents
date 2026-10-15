@@ -33,6 +33,9 @@ cron (GitHub Actions) -> search (Tavily or DuckDuckGo) -> fetch pages (trafilatu
 6. **Test it**: *Actions -> research-agent -> Run workflow*. Tick **dry_run** first to download a sample digest
    without emailing anything; run it again unticked to get the real email.
 
+   To check Gmail and your LLM key without waiting for real results, run the workflow with **test_email_to** set to an
+   address: it sends a sample digest there plus an "LLM check" line, and does not touch saved state.
+
 Never put the Gmail password or API keys in `config.yaml`, in code, or in chat. Secrets belong only in GitHub Secrets
 (or a local `.env`, which is git-ignored).
 
