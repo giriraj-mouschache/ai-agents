@@ -1,0 +1,48 @@
+# Edit this file to change what the agent researches. Secrets never go here (use GitHub Secrets).
+#
+# Every setting below is optional except `topics`; see agent/config.py for the defaults.
+
+llm:
+  # Tried in order. Providers with no API key set are skipped, so one key is enough.
+  providers: [gemini, groq, openrouter]
+  # Free-tier model names change; override here if a provider says "model not found".
+  # models:
+  #   gemini: gemini-2.5-flash
+  #   groq: llama-3.3-70b-versatile
+
+search:
+  timelimit: w          # d = past day, w = past week, m = past month, y = past year
+  results_per_query: 8
+
+research:
+  max_rounds: 2         # round 2 runs follow-up searches the LLM suggests
+  max_pages_per_topic: 8
+  min_score: 6          # only items the LLM scores >= 6/10 are emailed
+  max_items_per_topic: 6
+
+email:
+  subject_prefix: "Research digest"
+  send_when_empty: false   # set true to get a "nothing new" email as a heartbeat
+  tldr: true
+
+# Starter topics: replace them with what you actually want to track.
+topics:
+  - name: AI and LLM engineering
+    goal: >
+      New releases, techniques and tools for building LLM applications and agents that a working
+      software engineer could use. Skip hype, funding news and generic listicles.
+    timelimit: w
+    queries:
+      - new open source LLM agent framework release
+      - LLM agents production lessons learned
+      - free tier LLM API changes
+
+  - name: Remote freelance software leads
+    goal: >
+      Concrete, recent opportunities for remote freelance or contract software work (web, backend,
+      automation, AI integrations): job posts, hiring threads and clients asking for developers.
+      Skip generic "how to freelance" advice and expired posts.
+    timelimit: w
+    queries:
+      - remote freelance developer contract hiring this week
+      - looking for freelance developer automation AI integration

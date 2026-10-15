@@ -1,0 +1,4 @@
+requests>=2.32
+trafilatura>=2.0
+ddgs>=9.0
+PyYAML>=6.0
