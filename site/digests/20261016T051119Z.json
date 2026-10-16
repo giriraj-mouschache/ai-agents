@@ -1,0 +1,176 @@
+{
+ "version": 1,
+ "id": "20261016T051119Z",
+ "ran_at": "2026-10-16T05:11:19+00:00",
+ "date": "2026-10-16",
+ "kind": "workflow_dispatch",
+ "status": "partial",
+ "emailed": true,
+ "llm": "",
+ "tldr": [],
+ "sections": [
+  {
+   "name": "New AI advancements",
+   "items": [
+    {
+     "title": "Latest in AI: New Models, Projects & Releases (2026) | olud.ai",
+     "url": "https://olud.ai/latest.html",
+     "domain": "olud.ai",
+     "summary": "Latest in AI What's new right now — the freshest models, open-weight and commercial, trending GitHub projects, new Hugging Face Spaces and the AI paper of the day. No fluff, updated hourly.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "AI Model Release Tracker - Latest Releases | LM Market Cap",
+     "url": "https://lmmarketcap.com/tools/model-release-tracker",
+     "domain": "lmmarketcap.com",
+     "summary": "Track the latest AI model releases from OpenAI, Anthropic, Google, Meta, DeepSeek and more. New model launches, version updates, and feature additions.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "LLM Updates (October 2026) - AI Model Releases & Provider Activity",
+     "url": "https://lmmarketcap.com/llm-updates",
+     "domain": "lmmarketcap.com",
+     "summary": "How often are new AI models released? The pace of AI model releases has accelerated significantly. In the last 30 days alone, 52 new models were added from 24 providers. On average, multiple new models launch every week across providers like OpenAI, Anthropic, Google, DeepSeek, Meta, and Mistral. Wh",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "AI/TLDR — New AI Models, Tools & Papers This Week",
+     "url": "https://ai-tldr.dev/",
+     "domain": "ai-tldr.dev",
+     "summary": "AI/TLDR is a high-volume tracker of new AI releases — models, open-source repos, developer tools, papers, datasets, benchmarks and security findings — refreshed every 2 hours and explained in plain English.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "AI Updates Today (October 2026) - Latest AI Model Releases",
+     "url": "https://llm-stats.com/llm-updates",
+     "domain": "llm-stats.com",
+     "summary": "Track recent AI model releases, API changes, pricing updates, and feature launches across the major model providers in one daily changelog.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "New LLM Models — Latest AI Model Releases, Tracked Live · modelgrep",
+     "url": "https://modelgrep.com/new",
+     "domain": "modelgrep.com",
+     "summary": "The newest AI models, tracked as they ship: release dates, intelligence benchmarks, pricing and context windows for the latest LLM releases from OpenAI, Anthropic, Google, Qwen, DeepSeek and more.",
+     "why": "",
+     "score": null
+    }
+   ]
+  },
+  {
+   "name": "AI and LLM engineering",
+   "items": [
+    {
+     "title": "20 practical lessons on production AI agents… · AGI Hunt",
+     "url": "https://agihunt.info/en/p/1a1402d7cb04b2c13101379a93e",
+     "domain": "agihunt.info",
+     "summary": "1 day ago · Maryam Miradi distilled 20 hands-on AI engineering lessons from Atlassian Team Europe on running production AI agents: Context graphs & agent memory Agents…",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Analyzing 1,186 Failed LLM Agent Runs: Lessons in Reliability",
+     "url": "https://explore.n1n.ai/blog/analyzing-failed-llm-agent-runs-reliability-lessons-2026-10-12",
+     "domain": "explore.n1n.ai",
+     "summary": "4 days ago · A deep dive into why LLM agents fail, the importance of strict assertion gates, and how logging failure taxonomies can improve agent performance.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Seven Ways AI Agents Break in Production, and the Engineering ...",
+     "url": "https://mobcoderaitechnology.wordpress.com/2026/10/14/ai-agents-fail-in-production-seven-failure-modes/",
+     "domain": "mobcoderaitechnology.wordpress.com",
+     "summary": "2 days ago · Many production systems let agents act alone on small, low risk tasks and require approval for the rest. How do you test an AI agent? Build an evaluation set of realistic and edge case tasks, score outcomes and tool use, include adversarial examples and re-run tests after each change. S",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Agentic AI Production Strategies and Performance Trade-offs",
+     "url": "https://vpodk.com/5-agentic-ai-trade-offs-to-consider-before-production/",
+     "domain": "vpodk.com",
+     "summary": "2 days ago · Review critical trade-offs between speed, cost, and accuracy when moving agentic AI systems from initial prototypes to full production environments.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Production Patterns for Agents, Evals, and LLM Costs:...",
+     "url": "https://daily.dev/posts/production-patterns-for-agents-evals-and-llm-costs-qcon-ai-new-york-2026-yt65axuka",
+     "domain": "daily.dev",
+     "summary": "3 days ago · What techniques help reduce LLM context costs as agent workloads scale in production? Prompt compression and reordering context to increase provider cache hits are key techniques, alongside tiered storage for conversation history, according to work from a former Netflix distributed cach",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Best LLMs for Agentic — October 2026 Leaderboard | BenchLM.ai",
+     "url": "https://benchlm.ai/agentic",
+     "domain": "benchlm.ai",
+     "summary": "1 day ago · Compare 950 AI models on agentic benchmarks for tool use, browser research, and multi-step computer tasks. See which models handle terminal work, API tools, and software interfaces most reliably.",
+     "why": "",
+     "score": null
+    }
+   ]
+  },
+  {
+   "name": "Remote freelance software leads",
+   "items": [
+    {
+     "title": "Freelance AI Jobs | Contract AI Work",
+     "url": "https://aitrainingjobs.org/freelance-ai-jobs/",
+     "domain": "aitrainingjobs.org",
+     "summary": "1 day ago · Find freelance AI jobs and contract expert gigs. Hourly and project-based roles in coding, law, medicine, languages, and more.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Upwork AI Automation Jobs 2026: Hourly Rates & Demand Data",
+     "url": "https://remoteaitools.com/upwork-ai-automation-jobs-2026/",
+     "domain": "remoteaitools.com",
+     "summary": "4 days ago · What Upwork AI automation jobs really pay in 2026, Upwork's official in-demand skills data, and the exact profile changes that get automation freelancers hired.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Best AI Agents for Freelancers 2026 | Toolradar",
+     "url": "https://toolradar.com/best/ai-agents/for/freelancers",
+     "domain": "toolradar.com",
+     "summary": "2 days ago · The 12 best AI agents for freelancers in 2026, led by Lucid Train, Gemini CLI and Zapier MCP. Compare free plans, starting prices and ratings.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Best AI Tools for Freelancers 2026: Tested AI Stack by Budget",
+     "url": "https://remoteaitools.com/best-ai-tools-for-freelancers/",
+     "domain": "remoteaitools.com",
+     "summary": "4 days ago · The 10 AI tools for freelancers worth using in 2026, plus a ready-made AI stack for every budget: free, ~$45/month and pro. Real prices, honest picks.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Top AI Development Agencies to Hire in October 2026",
+     "url": "https://www.50pros.com/hire/artificial-intelligence/ai-development",
+     "domain": "50pros.com",
+     "summary": "5 days ago · AI Development agencies specialize in building custom artificial intelligence solutions, machine learning models, and AI-powered applications that drive business growth and operational efficiency. These specialized development partners help startups, enterprises, and scaleups integrate ",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Remote AI Training & Data Annotation Jobs | aitrainer.work",
+     "url": "https://aitrainer.work/",
+     "domain": "aitrainer.work",
+     "summary": "1 day ago · 4,838 remote, work-from-home AI training and data annotation jobs from 24 platforms, updated daily, with the pay each listing states. Mercor, SME Careers, Alignerr and more.",
+     "why": "",
+     "score": null
+    }
+   ]
+  }
+ ],
+ "errors": [
+  "The AI step failed, so these results are unranked and unsummarised (gemini: HTTP 404: [{\n  \"error\": {\n    \"code\": 404,\n    \"message\": \"This model models/gemini-2.5-flash is no longer available to new users. Please update your code to us; groq: HTTP 404: {\"error\":{\"message\":\"The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.\",\"type\":\"invalid_request_error\",\"code\":\"model). Check the AI keys in GitHub secrets."
+ ],
+ "error": ""
+}
