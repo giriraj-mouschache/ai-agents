@@ -1,0 +1,91 @@
+{
+ "version": 1,
+ "id": "20261016T055827Z",
+ "ran_at": "2026-10-16T05:58:27+00:00",
+ "date": "2026-10-16",
+ "kind": "workflow_dispatch",
+ "status": "ok",
+ "emailed": true,
+ "llm": "groq",
+ "tldr": [
+  "Meta released Muse Spark Open, an 816‑billion‑parameter multimodal model with a 1‑million‑token context window, open‑weight and hosted across major cloud platforms and even runnable on two Apple M5 Ultra Macs",
+  "Anthropic granted six METR staff employee‑like access to its risk‑assessment resources to review frontier‑AI risks",
+  "NVIDIA announced a 2.8‑trillion‑token Indic pretraining corpus and an open data pipeline for large‑scale language model training",
+  "Two new Upwork postings seek full‑stack developers for a dental clinic website and a New Zealand local‑services marketplace MVP"
+ ],
+ "sections": [
+  {
+   "name": "New AI advancements",
+   "items": [
+    {
+     "title": "AI News Today — Latest AI Announcements, Model Releases ...",
+     "url": "https://www.donvitocodes.com/ai-news",
+     "domain": "donvitocodes.com",
+     "summary": "Meta AI Research released Muse Spark Open on Oct 15, 2026 – a multimodal mixture‑of‑experts model with 816 billion total parameters (42 billion active) and a 1 million‑token context window. The model is open‑weight, hosted on Hugging Face, SageMaker, Google Cloud Model Garden and Microsoft Foundry, with inference services on Baseten, Fireworks, Groq, Modal, Nebius, OpenRouter and Together, and can run on a desktop using two Apple M5 Ultra Macs. Anthropic announced it is giving six METR staff employee‑like access to its risk‑assessment resources, allowing them to review frontier‑AI risks under ",
+     "why": "Shows a major new open‑weight AI model and a notable step toward industry transparency on AI risk assessment.",
+     "score": 9.0
+    },
+    {
+     "title": "AI Research — Papers, Breakthroughs & Findings | AI News Hub",
+     "url": "https://aienews.org/research.html",
+     "domain": "aienews.org",
+     "summary": "The AI News Hub reports several concrete developments: NVIDIA unveiled a 2.8‑trillion‑token Indic pretraining corpus and open data pipeline; Anthropic moved its Claude Code Review tool to general availability with up to $50,000 in free credits for enterprises; Meta released Muse Spark Open, an 816‑billion‑parameter multimodal model supporting text, image, video, and audio with up to one‑million‑token context. The page aggregates these items from recent announcements.",
+     "why": "Provides recent, actionable information on new models, tools, and datasets that directly impact developers and researchers.",
+     "score": 7.0
+    }
+   ]
+  },
+  {
+   "name": "AI and LLM engineering",
+   "items": [
+    {
+     "title": "6 Parallelism Strategies for LLM Inference in Production",
+     "url": "https://daily.dev/posts/6-parallelism-strategies-for-llm-inference-in-production-8ilczbwd8",
+     "domain": "daily.dev",
+     "summary": "The article explains six parallelism strategies—data, tensor, pipeline, context, expert, and hybrid—for scaling LLM inference in production, detailing trade‑offs and when to use each. It also introduces an open‑source router (HarnessRouter) that unifies agent harnesses and a schema‑guided memory approach using Pydantic‑typed entities and the Zep Graphiti library.",
+     "why": "Provides concrete engineering guidance to efficiently run LLMs and build scalable agents.",
+     "score": 9.0
+    },
+    {
+     "title": "Xplore-LAB/llm-tracker: 大模型情报局 - GitHub",
+     "url": "https://github.com/Xplore-LAB/llm-tracker",
+     "domain": "github.com",
+     "summary": "Xplore‑LAB’s llm‑tracker is a GitHub‑hosted static site that automatically fetches new arXiv LLM papers, classifies them into eight themes, and generates Chinese one‑sentence notes using an LLM. The pipeline runs daily via GitHub Actions and offers searchable tables, company‑specific columns, and optional PDF links.",
+     "why": "Provides an automated way to stay current with the flood of LLM research papers.",
+     "score": 8.0
+    },
+    {
+     "title": "A Production-Grade, High-Efficiency Agentic RL Framework for ...",
+     "url": "https://www.aimodels.fyi/papers/arxiv/production-grade-high-efficiency-agentic-rl-framework",
+     "domain": "aimodels.fyi",
+     "summary": "A recent paper presents a lean 14,000‑line production‑grade framework for training high‑efficiency agentic reinforcement‑learning LLMs, aiming to simplify the development of frontier LLM agents.",
+     "why": "Offers a ready‑to‑use codebase that can accelerate building and training LLM agents for engineers.",
+     "score": 7.0
+    }
+   ]
+  },
+  {
+   "name": "Remote freelance software leads",
+   "items": [
+    {
+     "title": "Full-Stack Developer Needed for Dental Clinic Website ...",
+     "url": "https://www.upwork.com/freelance-jobs/apply/Full-Stack-Developer-Needed-for-Dental-Clinic-Website-Management-System_~022109196078270423573/",
+     "domain": "upwork.com",
+     "summary": "Posted 5 days ago on Upwork, this project seeks an experienced full‑stack developer to create a modern, mobile‑first website and clinic management system for a dental care clinic. The platform must enable patients to book appointments online, manage profiles, access e‑prescriptions, and include a secure admin dashboard for appointment management. Applications are submitted via the provided Upwork link.",
+     "why": "A concrete, recent remote contract for full‑stack development with clear deliverables.",
+     "score": 9.0
+    },
+    {
+     "title": "Full-Stack Web Developer to Build an MVP Local Services ...",
+     "url": "https://www.upwork.com/freelance-jobs/apply/Full-Stack-Web-Developer-Build-MVP-Local-Services-Marketplace_~022109183920056040560/",
+     "domain": "upwork.com",
+     "summary": "Posted 5 days ago on Upwork, this job advertises a need for a full‑stack developer or small team to build an MVP website for a new local services marketplace in New Zealand, connecting customers with service providers such as cleaners, lawn‑mowers, and tutors. The scope includes developing the core marketplace functionality and user interface. Interested freelancers apply through the Upwork posting link.",
+     "why": "Provides a timely remote freelance opportunity to build a full‑stack MVP for a growing marketplace.",
+     "score": 9.0
+    }
+   ]
+  }
+ ],
+ "errors": [],
+ "error": ""
+}
