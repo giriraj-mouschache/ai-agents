@@ -1,4 +1,125 @@
 {
  "version": 1,
- "seen": {}
+ "seen": {
+  "027f23383749d06e": {
+   "url": "https://www.remotesource.com/remote-jobs/contract",
+   "title": "Remote Contract Jobs | Contract & Freelance Remote Work ...",
+   "first_seen": "2026-10-16"
+  },
+  "09c96b83c5caa1c6": {
+   "url": "https://llm-stats.com/llm-updates",
+   "title": "AI Updates Today (October 2026) - Latest AI Model Releases",
+   "first_seen": "2026-10-16"
+  },
+  "1bef68814a6c36b6": {
+   "url": "https://arxiv.org/abs/2610.16352",
+   "title": "[2610.16352] A Production-Grade, High-Efficiency Agentic RL ...",
+   "first_seen": "2026-10-16"
+  },
+  "1dfc9749d9517556": {
+   "url": "https://agihunt.info/en/p/1a1402d7cb04b2c13101379a93e",
+   "title": "20 practical lessons on production AI agents… · AGI Hunt",
+   "first_seen": "2026-10-16"
+  },
+  "26568ff41a64ac06": {
+   "url": "https://www.benchleader.com/releases",
+   "title": "New AI model releases: the last 30 days - BenchLeader",
+   "first_seen": "2026-10-16"
+  },
+  "3681d7641b88e3e2": {
+   "url": "https://4dayweek.io/remote-jobs",
+   "title": "Remote Jobs – Reduced Hours (2026) | 4dayweek.io",
+   "first_seen": "2026-10-16"
+  },
+  "4cd90ccaf3c3e41b": {
+   "url": "https://www.remotesource.com/remote-jobs/posted-today",
+   "title": "Remote Jobs Posted Today | New Listings Updated Daily ...",
+   "first_seen": "2026-10-16"
+  },
+  "548d4c67f8abfa74": {
+   "url": "https://github.com/open-free-llm-api/awesome-freellm-apis",
+   "title": "GitHub - open-free-llm-api/awesome-freellm-apis: 134+ free ...",
+   "first_seen": "2026-10-16"
+  },
+  "685daa0ac24f9e45": {
+   "url": "https://mobcoderaitechnology.wordpress.com/2026/10/14/ai-agents-fail-in-production-seven-failure-modes",
+   "title": "Seven Ways AI Agents Break in Production, and the Engineering ...",
+   "first_seen": "2026-10-16"
+  },
+  "85d7dc9820152d5f": {
+   "url": "https://modelgrep.com/new",
+   "title": "New LLM Models — Latest AI Model Releases, Tracked Live · modelgrep",
+   "first_seen": "2026-10-16"
+  },
+  "8842e2259d981737": {
+   "url": "https://daily.dev/posts/production-patterns-for-agents-evals-and-llm-costs-qcon-ai-new-york-2026-yt65axuka",
+   "title": "Production Patterns for Agents, Evals, and LLM Costs:...",
+   "first_seen": "2026-10-16"
+  },
+  "9dd5691bddc9910f": {
+   "url": "https://aitrainingjobs.org/freelance-ai-jobs",
+   "title": "Freelance AI Jobs | Contract AI Work",
+   "first_seen": "2026-10-16"
+  },
+  "a87bc903c50f8954": {
+   "url": "https://github.com/dyronrh/awesome-agentops-landscape",
+   "title": "GitHub - dyronrh/awesome-agentops-landscape: A curated list ...",
+   "first_seen": "2026-10-16"
+  },
+  "b46e0e25766881a2": {
+   "url": "https://lmmarketcap.com/llm-updates",
+   "title": "LLM Updates (October 2026) - AI Model Releases & Provider Activity",
+   "first_seen": "2026-10-16"
+  },
+  "b7a4c88a5ee3b883": {
+   "url": "https://www.aiapps.com/this-week",
+   "title": "AI Tools Launched This Week — Latest AI Apps | AIapps",
+   "first_seen": "2026-10-16"
+  },
+  "b99d74f061fafbf7": {
+   "url": "https://montecarlo.ai/blog-ai-builders-agent-trust",
+   "title": "How to ship agents you can trust: notes from my AI Builders ...",
+   "first_seen": "2026-10-16"
+  },
+  "c046449b97ecef0d": {
+   "url": "https://launchaijam.com/new-ai-tools",
+   "title": "New AI Tools Launched This Week",
+   "first_seen": "2026-10-16"
+  },
+  "c4e340847690fd92": {
+   "url": "https://www.factualminds.com/blog/harness-engineering-production-ai-agents-2026",
+   "title": "Harness Engineering for Production AI Agents (Oct 2026)",
+   "first_seen": "2026-10-16"
+  },
+  "c66e2ecc9e3a39a8": {
+   "url": "https://anywhereremotejobs.com/employment/remote-contract-jobs",
+   "title": "Remote Contract Jobs | Work From Anywhere",
+   "first_seen": "2026-10-16"
+  },
+  "d76afe36ff4c959e": {
+   "url": "https://wantremote.com/jobs/full-stack-developer",
+   "title": "Remote Full-stack Developer Jobs | Frontend & Backend Roles",
+   "first_seen": "2026-10-16"
+  },
+  "d896e5230ffd2516": {
+   "url": "https://latestremote.com/",
+   "title": "Remote Jobs - The Latest Fully-Remote Jobs, Updated Daily ...",
+   "first_seen": "2026-10-16"
+  },
+  "d9f3e3e24fa81d5a": {
+   "url": "https://www.randstadusa.com/jobs/remote",
+   "title": "Apply to Remote Jobs and Work-From-Home Jobs Online ...",
+   "first_seen": "2026-10-16"
+  },
+  "df75235dba39bb8d": {
+   "url": "https://ai-tldr.dev/",
+   "title": "AI/TLDR — New AI Models, Tools & Papers This Week",
+   "first_seen": "2026-10-16"
+  },
+  "f877c700bcff29ec": {
+   "url": "https://olud.ai/latest.html",
+   "title": "Latest in AI: New Models, Projects & Releases (2026) | olud.ai",
+   "first_seen": "2026-10-16"
+  }
+ }
 }
