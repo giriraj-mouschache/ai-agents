@@ -7,7 +7,7 @@ llm:
   providers: [gemini, groq, openrouter]
   # Free-tier model names change; override here if a provider says "model not found".
   # models:
-  #   gemini: gemini-2.5-flash
+  #   gemini: gemini-3.8-flash
   #   groq: llama-3.3-70b-versatile
 
 search:

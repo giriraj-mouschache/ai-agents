@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 PROVIDERS: dict[str, dict[str, str]] = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-        "model": "gemini-2.5-flash",
+        "model": "gemini-3.8-flash",
         "key_env": "GEMINI_API_KEY",
     },
     "groq": {
@@ -46,6 +46,36 @@ class Backend:
     base_url: str
     model: str
     api_key: str
+    discovered: bool = False  # True once we asked the provider which models this key can use
+
+
+_SKIP_MODEL = re.compile(r"embed|tts|whisper|guard|safeguard|image|imagen|audio|live|transcri|moderat|veo|rerank|robotics|vision", re.I)
+_GROQ_PREFERENCE = ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant", "openai/gpt-oss-20b"]
+
+
+def pick_model(provider: str, model_ids: list[str]) -> str | None:
+    """Choose a chat model from the ids a provider says this key can use (free-tier names change often)."""
+    ids = [m.removeprefix("models/") for m in model_ids if isinstance(m, str) and not _SKIP_MODEL.search(m)]
+    if provider == "gemini":
+        def version(m: str):
+            hit = re.fullmatch(r"gemini-(\d+(?:\.\d+)?)-flash(-lite)?", m)
+            return (float(hit.group(1)), hit.group(2) is None) if hit else None
+        versioned = sorted((v, m) for m in ids if (v := version(m)) is not None)
+        if versioned:
+            return versioned[-1][1]
+        flash = sorted(m for m in ids if m.startswith("gemini-") and "flash" in m)
+        return flash[-1] if flash else next((m for m in sorted(ids) if m.startswith("gemma")), None)
+    if provider == "groq":
+        for wanted in _GROQ_PREFERENCE:
+            if wanted in ids:
+                return wanted
+        return next((m for m in sorted(ids) if re.search(r"llama|gpt-oss|qwen", m)), None)
+    free = [m for m in ids if m.endswith(":free")]
+    for needle in ("llama-3.3-70b", "gpt-oss-120b", "instruct"):
+        hit = next((m for m in sorted(free) if needle in m), None)
+        if hit:
+            return hit
+    return free[0] if free else None
 
 
 def extract_json(text: str) -> dict:
@@ -133,6 +163,16 @@ class LLMClient:
                 last = exc
         raise LLMError(str(last))
 
+    def _discover(self, backend: Backend) -> str | None:
+        try:
+            resp = requests.get(f"{backend.base_url}/models", headers={"Authorization": f"Bearer {backend.api_key}"}, timeout=self.timeout)
+            if resp.status_code != 200:
+                return None
+            ids = [m.get("id", "") for m in resp.json().get("data", []) if isinstance(m, dict)]
+        except (requests.RequestException, ValueError, AttributeError):
+            return None
+        return pick_model(backend.name, ids)
+
     def _call(
         self,
         backend: Backend,
@@ -176,6 +216,15 @@ class LLMClient:
                     # Some free models reject JSON mode; retry without it.
                     payload.pop("response_format")
                     continue
+                if resp.status_code == 404 and not backend.discovered:
+                    # Most likely a retired model name: ask the provider what this key can use, then retry once.
+                    backend.discovered = True
+                    chosen = self._discover(backend)
+                    if chosen and chosen != backend.model:
+                        log.warning("%s: model %s unavailable, switching to %s", backend.name, backend.model, chosen)
+                        backend.model = chosen
+                        payload["model"] = chosen
+                        continue
                 if resp.status_code in (429, 500, 502, 503, 504):
                     retry_after = resp.headers.get("Retry-After", "")
                     if retry_after.isdigit():

@@ -260,3 +260,41 @@ def test_gate_decisions(tmp_path):
     (tmp_path / "settings.json").write_text(json.dumps({"paused": True}))
     assert decide("schedule", False, False, False, tmp_path, now)[0] is False
     assert decide("workflow_dispatch", True, False, False, tmp_path, now)[0] is True  # "Run now" works while paused
+
+
+def test_pick_model_prefers_current_free_models():
+    from agent.llm import pick_model
+
+    gem = ["models/gemini-2.5-flash", "models/gemini-3.6-flash", "models/gemini-3.8-flash", "models/gemini-3.8-flash-lite",
+           "models/gemini-3.1-pro-preview", "models/gemini-3.8-flash-image", "models/text-embedding-004"]
+    assert pick_model("gemini", gem) == "gemini-3.8-flash"
+    assert pick_model("gemini", ["models/gemini-3.5-flash-lite", "models/embedding-001"]) == "gemini-3.5-flash-lite"
+    assert pick_model("groq", ["whisper-large-v3", "openai/gpt-oss-20b", "openai/gpt-oss-120b"]) == "openai/gpt-oss-120b"
+    assert pick_model("groq", ["whisper-large-v3"]) is None
+    assert pick_model("openrouter", ["a/b", "meta-llama/llama-3.3-70b-instruct:free", "x/y:free"]) == "meta-llama/llama-3.3-70b-instruct:free"
+
+
+def test_llm_switches_model_after_404(monkeypatch):
+    import agent.llm as llm_mod
+
+    calls = []
+
+    class Resp:
+        def __init__(self, status, payload):
+            self.status_code, self._p, self.text, self.headers = status, payload, "x", {}
+
+        def json(self):
+            return self._p
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        calls.append(json["model"])
+        if json["model"] == "gemini-2.5-flash":
+            return Resp(404, {})
+        return Resp(200, {"choices": [{"message": {"content": "OK"}}]})
+
+    monkeypatch.setattr(llm_mod.requests, "post", fake_post)
+    monkeypatch.setattr(llm_mod.requests, "get", lambda url, headers=None, timeout=None: Resp(200, {"data": [{"id": "models/gemini-3.8-flash"}]}))
+    cfg = _merge(DEFAULTS, {"llm": {"providers": ["gemini"], "min_interval_seconds": 0}})
+    client = llm_mod.LLMClient(cfg, env={"GEMINI_API_KEY": "k"})
+    assert client.chat("s", "u", json_mode=False) == "OK"
+    assert calls == ["gemini-2.5-flash", "gemini-3.8-flash"]
