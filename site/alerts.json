@@ -1,0 +1,34 @@
+{
+ "batch": "20261016T065640Z",
+ "created": "2026-10-16T06:56:40+00:00",
+ "items": [
+  {
+   "kind": "alert",
+   "tag": "alert-0",
+   "title": "AI News Today, October 16, 2026: Top Stories Explained",
+   "body": "9/10 in New AI advancements. ExplainX’s Oct 16 roundup highlights Nemotron 3.5 Bolt, a 74‑billion‑parameter MoE model that fits in 24 GB using 2‑bit expert weig",
+   "url": "https://www.explainx.ai/news"
+  },
+  {
+   "kind": "alert",
+   "tag": "alert-1",
+   "title": "Release Notes | liteLLM",
+   "body": "9/10 in AI and LLM engineering. LiteLLM released version v1.105.0 on Oct 11 2026, adding support for Claude Sonnet 5.5 and GPT‑6.1 Sol, a new Decisions API acro",
+   "url": "https://docs.litellm.ai/release_notes"
+  },
+  {
+   "kind": "alert",
+   "tag": "alert-2",
+   "title": "LiteLLM for Claude Code: Config, Max Subscription, Gotchas ...",
+   "body": "9/10 in AI and LLM engineering. A step‑by‑step guide explains how to run a LiteLLM proxy for Claude Code, configure model_list entries, set ANTHROPIC_BASE_URL a",
+   "url": "https://standardcompute.com/guides/litellm-claude-code"
+  },
+  {
+   "kind": "ideas",
+   "tag": "ideas",
+   "title": "3 new topic ideas",
+   "body": "AI Engineer Salary Surge, Freelance Platforms Market Expansion, Hybrid Three‑Day Work Standard",
+   "url": "/?tab=ideas"
+  }
+ ]
+}

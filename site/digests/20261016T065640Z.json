@@ -1,0 +1,86 @@
+{
+ "version": 1,
+ "id": "20261016T065640Z",
+ "ran_at": "2026-10-16T06:56:40+00:00",
+ "date": "2026-10-16",
+ "kind": "workflow_dispatch",
+ "status": "ok",
+ "emailed": true,
+ "llm": "groq",
+ "tldr": [
+  "Nemotron 3.5 Bolt, a 74‑billion‑parameter MoE model, fits in 24 GB with 2‑bit expert weights and runs ~84 tokens/s on RTX Spark.",
+  "OpenAI released a ChatGPT Chrome extension that can read and control browser tabs, using per‑site permission prompts.",
+  "The FTC issued 50‑page requests for records from OpenAI and Anthropic, while Meta’s new terms (effective Oct 30) permit scraping and training on publishers’ sites.",
+  "LiteLLM v1.105.0 adds Claude Sonnet 5.5 and GPT‑6.1 Sol support, a Decisions API, litellm.agent() for coding agents, Lens tracing, and notes breaking changes for Claude 5.x settings."
+ ],
+ "sections": [
+  {
+   "name": "New AI advancements",
+   "items": [
+    {
+     "title": "AI News Today, October 16, 2026: Top Stories Explained",
+     "url": "https://www.explainx.ai/news",
+     "domain": "explainx.ai",
+     "summary": "ExplainX’s Oct 16 roundup highlights Nemotron 3.5 Bolt, a 74‑billion‑parameter MoE model that fits in 24 GB using 2‑bit expert weights and runs at ~84 tokens/s on RTX Spark. OpenAI released a ChatGPT Chrome extension that can read and control browser tabs with per‑site permission prompts. Anthropic unveiled an alignment auditor, Haiku 4.5, achieving a 72.7 audit‑quality score, surpassing Opus 4.6.",
+     "why": "These items illustrate rapid advances in model efficiency, new user‑facing AI tools, and concrete progress in AI safety evaluation.",
+     "score": 9.0
+    },
+    {
+     "title": "AI News: Artificial Intelligence Stories, Ranked | AI Weekly",
+     "url": "https://aiweekly.co/",
+     "domain": "aiweekly.co",
+     "summary": "The FTC issued 50‑page requests to OpenAI and Anthropic for records on security incidents, safeguards, marketing and privacy. Meta announced new business terms effective Oct 30 that permit scraping and training on publishers’ websites. Anthropic’s investor day discussed a reduced IPO valuation and Character.ai filed for bankruptcy.",
+     "why": "Regulatory and policy moves are reshaping how leading AI firms operate and are crucial for anyone tracking AI governance.",
+     "score": 7.0
+    }
+   ]
+  },
+  {
+   "name": "AI and LLM engineering",
+   "items": [
+    {
+     "title": "Release Notes | liteLLM",
+     "url": "https://docs.litellm.ai/release_notes",
+     "domain": "docs.litellm.ai",
+     "summary": "LiteLLM released version v1.105.0 on Oct 11 2026, adding support for Claude Sonnet 5.5 and GPT‑6.1 Sol, a new Decisions API across eight providers, and the litellm.agent() function for building coding agents via the gateway. The release also introduces Lens with Agent Traces for observability. Breaking‑change notes are provided for safe upgrades.",
+     "why": "Provides concrete, up‑to‑date library features that software engineers can immediately integrate into LLM‑powered applications and agents.",
+     "score": 9.0
+    },
+    {
+     "title": "LiteLLM for Claude Code: Config, Max Subscription, Gotchas ...",
+     "url": "https://standardcompute.com/guides/litellm-claude-code",
+     "domain": "standardcompute.com",
+     "summary": "A step‑by‑step guide explains how to run a LiteLLM proxy for Claude Code, configure model_list entries, set ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN, and handle subscription passthrough, gotchas, and routing to other providers like GPT or Gemini.",
+     "why": "Provides concrete, actionable instructions for deploying Claude Code via LiteLLM, saving engineers time and avoiding common pitfalls.",
+     "score": 9.0
+    },
+    {
+     "title": "litellm-docs/release_notes/index.md at main · BerriAI/litellm ...",
+     "url": "https://github.com/BerriAI/litellm-docs/blob/main/release_notes/index.md",
+     "domain": "github.com",
+     "summary": "LiteLLM release notes (v1.105.0, Oct 11 2026) list new provider support (Claude Sonnet 5.5, GPT‑6.1 Sol), the Decisions API, litellm.agent() for coding agents, and Lens tracing. It also highlights breaking changes and recent feature additions across versions.",
+     "why": "Keeps engineers up‑to‑date on the latest LiteLLM capabilities they can leverage when building LLM‑powered applications.",
+     "score": 9.0
+    },
+    {
+     "title": "Claude Opus 5.5 / Sonnet 5.5: 5 settings that return 400 when ...",
+     "url": "https://dev.to/persimmoq/claude-opus-55-sonnet-55-5-settings-that-return-400-when-you-only-change-the-model-name-5g36",
+     "domain": "dev.to",
+     "summary": "Claude Opus 5.5 and Claude Sonnet 5.5 were released in September 2026 and introduce five API settings that now return HTTP 400 errors when only the model name is changed. The article details the breaking changes for the \"thinking\" parameter, forced tool_choice, and other fields, and provides example request code for both versions. An open‑source scanner (claude5-migration-kit) is offered to locate these problematic settings in codebases.",
+     "why": "Helps engineers quickly adapt existing Claude‑based applications to the new model versions and avoid runtime errors.",
+     "score": 9.0
+    },
+    {
+     "title": "Claude Code Compatibility | liteLLM",
+     "url": "https://docs.litellm.ai/docs/claude_code_compatibility",
+     "domain": "docs.litellm.ai",
+     "summary": "The Claude Code compatibility matrix page shows a daily‑generated table that verifies which LiteLLM releases work with Claude Code across model tiers (Haiku 4.5, Sonnet 4.6, Opus 4.7). It links to the JSON source and the test suite that populates the matrix.",
+     "why": "Engineers can quickly confirm whether their LiteLLM version supports the latest Claude Code models before integrating.",
+     "score": 7.0
+    }
+   ]
+  }
+ ],
+ "errors": [],
+ "error": ""
+}

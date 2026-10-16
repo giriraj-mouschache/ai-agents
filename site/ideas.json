@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "last_scout": "2026-10-16",
+ "radar": [
+  {
+   "area": "AI and software engineering",
+   "note": "AI job postings grew 74% year‑over‑year in 2025, with Machine Learning Engineer and AI Engineer roles seeing the highest demand (source 3)."
+  },
+  {
+   "area": "Remote and freelance work",
+   "note": "The global freelance platforms market is projected to reach $21.97 billion by 2031, expanding at a CAGR of roughly 16% (source 4)."
+  },
+  {
+   "area": "Startups and market trends",
+   "note": "No specific evidence about startups or market trends was provided in the supplied sources."
+  }
+ ],
+ "ideas": [
+  {
+   "id": "8dd72532ad",
+   "name": "AI Engineer Salary Surge",
+   "area": "AI and software engineering",
+   "why": "Median AI Engineer salary hit $185K in 2025 and total compensation topped $250K at top tech firms, reflecting record‑high demand for production‑oriented AI talent.",
+   "goal": "Track salary benchmarks to gauge talent cost pressure and identify premium hiring markets.",
+   "queries": [
+    "AI engineer median salary 2025",
+    "AI engineer total compensation trends 2025",
+    "AI talent salary benchmarks 2026"
+   ],
+   "confidence": 9.0,
+   "sources": [
+    {
+     "title": "The AI Talent Market: Skills in Demand & Salary Trends 2026",
+     "url": "https://hakia.com/tech-insights/ai-talent-market/"
+    }
+   ],
+   "created": "2026-10-16"
+  },
+  {
+   "id": "2d822e29b1",
+   "name": "Freelance Platforms Market Expansion",
+   "area": "Remote and freelance work",
+   "why": "Freelance platform revenues are expected to grow from $8.9B in 2026 to $21.97B by 2031, driven by hybrid work adoption and demand for niche digital skills.",
+   "goal": "Monitor market size and growth rates to spot investment or partnership opportunities in freelance ecosystem.",
+   "queries": [
+    "global freelance platforms market size 2026",
+    "freelance platforms CAGR 2026‑2031",
+    "freelance market growth forecast 2027"
+   ],
+   "confidence": 8.0,
+   "sources": [
+    {
+     "title": "Freelancing Trends 2026: Key Insights for Success - accio.com",
+     "url": "https://www.accio.com/business/freelancing-trends-2026"
+    }
+   ],
+   "created": "2026-10-16"
+  },
+  {
+   "id": "8448f25b5a",
+   "name": "Hybrid Three‑Day Work Standard",
+   "area": "Remote and freelance work",
+   "why": "89% of companies now require at least three in‑office days, establishing a three‑day hybrid model as the new norm for 2026.",
+   "goal": "Observe adoption rates and employee sentiment to advise clients on optimal hybrid policies.",
+   "queries": [
+    "2026 hybrid work three days statistic",
+    "companies requiring three office days 2026",
+    "hybrid work model adoption trends 2026"
+   ],
+   "confidence": 8.0,
+   "sources": [
+    {
+     "title": "Remote Work Trends 2026: 12 Data-Backed Workforce Shifts",
+     "url": "https://www.timechamp.io/blogs/remote-work-trends"
+    }
+   ],
+   "created": "2026-10-16"
+  }
+ ],
+ "declined_names": []
+}

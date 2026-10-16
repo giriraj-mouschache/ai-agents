@@ -36,6 +36,11 @@
    "title": "AI News Today — Latest AI Announcements, Model Releases ...",
    "first_seen": "2026-10-16"
   },
+  "1fe7c81625723c15": {
+   "url": "https://aiweekly.co/",
+   "title": "AI News: Artificial Intelligence Stories, Ranked | AI Weekly",
+   "first_seen": "2026-10-16"
+  },
   "26568ff41a64ac06": {
    "url": "https://www.benchleader.com/releases",
    "title": "New AI model releases: the last 30 days - BenchLeader",
@@ -44,6 +49,16 @@
   "2ef6531ebdb4a7fe": {
    "url": "https://lmmarketcap.com/tools/model-release-tracker",
    "title": "AI Model Release Tracker - Latest Releases | LM Market Cap",
+   "first_seen": "2026-10-16"
+  },
+  "2f4db75b4b8d6b76": {
+   "url": "https://paperswithcode.co/papers/recent",
+   "title": "Recent AI research papers | Papers with Code",
+   "first_seen": "2026-10-16"
+  },
+  "33b041c8a0dba879": {
+   "url": "https://www.reuters.com/technology/artificial-intelligence",
+   "title": "AI News | Latest Headlines and Developments | Reuters",
    "first_seen": "2026-10-16"
   },
   "3408bf905fa74d68": {
@@ -56,6 +71,21 @@
    "title": "Remote Jobs – Reduced Hours (2026) | 4dayweek.io",
    "first_seen": "2026-10-16"
   },
+  "3c4541585f9d1d23": {
+   "url": "https://wantremote.com/jobs/backend-developer",
+   "title": "Remote Backend Developer Jobs | APIs, Databases & Cloud Systems",
+   "first_seen": "2026-10-16"
+  },
+  "48827864ed4d3b2d": {
+   "url": "https://github.com/BerriAI/litellm-docs/blob/main/release_notes/index.md",
+   "title": "litellm-docs/release_notes/index.md at main · BerriAI/litellm ...",
+   "first_seen": "2026-10-16"
+  },
+  "4aa44745ce9368da": {
+   "url": "https://aienews.org/news.html",
+   "title": "AI News — Latest Headlines & Breaking Stories | AI News Hub",
+   "first_seen": "2026-10-16"
+  },
   "4cd90ccaf3c3e41b": {
    "url": "https://www.remotesource.com/remote-jobs/posted-today",
    "title": "Remote Jobs Posted Today | New Listings Updated Daily ...",
@@ -66,9 +96,24 @@
    "title": "GitHub - open-free-llm-api/awesome-freellm-apis: 134+ free ...",
    "first_seen": "2026-10-16"
   },
+  "5899bc4195fe902d": {
+   "url": "https://www.llmreference.com/best/open-source",
+   "title": "Best Open Source LLMs | LLM Reference",
+   "first_seen": "2026-10-16"
+  },
   "5b7eba2cd391e9bf": {
    "url": "https://ainews.ai/research",
    "title": "AI Research News: Latest Papers & Breakthroughs | AINews.ai",
+   "first_seen": "2026-10-16"
+  },
+  "5d45cc72c474bc0d": {
+   "url": "https://www.simonsfoundation.org/news/simons-foundation-launches-15m-effort-to-help-mathematicians-navigate-ai-era",
+   "title": "Simons, OpenAI, Anthropic back $15M math-AI initiative",
+   "first_seen": "2026-10-16"
+  },
+  "5da8d1f0701ff8ca": {
+   "url": "https://haystackapp.io/jobs/remote-backend-developer-jobs",
+   "title": "Remote Backend Developer Jobs - 347 Open Positions (Oct 2026 ...",
    "first_seen": "2026-10-16"
   },
   "606e08e02bbe4f9f": {
@@ -76,9 +121,19 @@
    "title": "Vibe Coding Jobs — Curated AI-Assisted Roles (Remote & Hybrid ...",
    "first_seen": "2026-10-16"
   },
+  "63688f8a7e82dbc7": {
+   "url": "https://haystackapp.io/jobs/backend-developer-jobs",
+   "title": "Backend Developer Jobs - 1,529 Open Positions (Oct 2026 ...",
+   "first_seen": "2026-10-16"
+  },
   "685daa0ac24f9e45": {
    "url": "https://mobcoderaitechnology.wordpress.com/2026/10/14/ai-agents-fail-in-production-seven-failure-modes",
    "title": "Seven Ways AI Agents Break in Production, and the Engineering ...",
+   "first_seen": "2026-10-16"
+  },
+  "6c3d5b0ed7829a36": {
+   "url": "https://jobbi.org/companies-hiring",
+   "title": "Tech Companies Hiring This Week — Jobbi",
    "first_seen": "2026-10-16"
   },
   "6d69680d31851d41": {
@@ -111,9 +166,24 @@
    "title": "Best AI Tools for Freelancers 2026: Tested AI Stack by Budget",
    "first_seen": "2026-10-16"
   },
+  "7a65db21f3b8796c": {
+   "url": "https://dev.to/persimmoq/claude-opus-55-sonnet-55-5-settings-that-return-400-when-you-only-change-the-model-name-5g36",
+   "title": "Claude Opus 5.5 / Sonnet 5.5: 5 settings that return 400 when ...",
+   "first_seen": "2026-10-16"
+  },
+  "7f9c4665042d3eea": {
+   "url": "https://www.weekday.works/jobs/backend-developer-jobs",
+   "title": "640+ Backend Developer Jobs (Oct 2026) | Weekday",
+   "first_seen": "2026-10-16"
+  },
   "832bff3b9ae405d9": {
    "url": "https://findarepo.com/categories/llm-tools",
    "title": "30 Best LLM Developer Tools on GitHub (October 2026 ...",
+   "first_seen": "2026-10-16"
+  },
+  "83e00e5b4af504d6": {
+   "url": "https://jobseek.dev/",
+   "title": "JobSeek — Remote Tech Jobs, Updated Daily (October 2026)",
    "first_seen": "2026-10-16"
   },
   "85d7dc9820152d5f": {
@@ -126,9 +196,24 @@
    "title": "Production Patterns for Agents, Evals, and LLM Costs:...",
    "first_seen": "2026-10-16"
   },
+  "8de7ab2f33e712e4": {
+   "url": "https://docs.litellm.ai/release_notes",
+   "title": "Release Notes | liteLLM",
+   "first_seen": "2026-10-16"
+  },
+  "986659f0f226f5cc": {
+   "url": "https://github.com/jaychempan/Agent-Leaderboard",
+   "title": "jaychempan/Agent-Leaderboard: AI Agent 生态排行榜 ... - GitHub",
+   "first_seen": "2026-10-16"
+  },
   "9dd5691bddc9910f": {
    "url": "https://aitrainingjobs.org/freelance-ai-jobs",
    "title": "Freelance AI Jobs | Contract AI Work",
+   "first_seen": "2026-10-16"
+  },
+  "a0e6cb9d542cff31": {
+   "url": "https://github.com/athemeroy/awesome-claude-5-5-videos",
+   "title": "GitHub - athemeroy/awesome-claude-5-5-videos: Source-linked ...",
    "first_seen": "2026-10-16"
   },
   "a572f8729f90a83e": {
@@ -139,6 +224,16 @@
   "a87bc903c50f8954": {
    "url": "https://github.com/dyronrh/awesome-agentops-landscape",
    "title": "GitHub - dyronrh/awesome-agentops-landscape: A curated list ...",
+   "first_seen": "2026-10-16"
+  },
+  "aff489bd56d54ef0": {
+   "url": "https://standardcompute.com/guides/litellm-claude-code",
+   "title": "LiteLLM for Claude Code: Config, Max Subscription, Gotchas ...",
+   "first_seen": "2026-10-16"
+  },
+  "b367824cbf0a8104": {
+   "url": "https://remotedevroles.com/",
+   "title": "Remote Developer Jobs | Engineering & DevOps",
    "first_seen": "2026-10-16"
   },
   "b46e0e25766881a2": {
@@ -181,6 +276,11 @@
    "title": "New AI Tools Launched This Week",
    "first_seen": "2026-10-16"
   },
+  "c2155f385b352324": {
+   "url": "https://www.reuters.com/technology/openai",
+   "title": "OpenAI News | Today's Latest Stories | Reuters",
+   "first_seen": "2026-10-16"
+  },
   "c362283838b3410c": {
    "url": "https://www.cnbc.com/2026/10/12/tiktok-ceo-bytedance-ai-scientific-breakthroughs.html",
    "title": "TikTok CEO: major scientific breakthroughs from AI within ...",
@@ -199,6 +299,11 @@
   "c66e2ecc9e3a39a8": {
    "url": "https://anywhereremotejobs.com/employment/remote-contract-jobs",
    "title": "Remote Contract Jobs | Work From Anywhere",
+   "first_seen": "2026-10-16"
+  },
+  "cf4520054794c94d": {
+   "url": "https://www.explainx.ai/news",
+   "title": "AI News Today, October 16, 2026: Top Stories Explained",
    "first_seen": "2026-10-16"
   },
   "d66a3f2568c37569": {
@@ -231,6 +336,16 @@
    "title": "AI/TLDR — New AI Models, Tools & Papers This Week",
    "first_seen": "2026-10-16"
   },
+  "e1a04d01e7921f04": {
+   "url": "https://docs.litellm.ai/docs/claude_code_compatibility",
+   "title": "Claude Code Compatibility | liteLLM",
+   "first_seen": "2026-10-16"
+  },
+  "e8d0fa3b2b02dddb": {
+   "url": "https://career.now/remote-jobs/backend-developer",
+   "title": "5,359 Remote Backend Developer jobs · median $140k–$190k (Oct ...",
+   "first_seen": "2026-10-16"
+  },
   "f877c700bcff29ec": {
    "url": "https://olud.ai/latest.html",
    "title": "Latest in AI: New Models, Projects & Releases (2026) | olud.ai",
@@ -239,6 +354,11 @@
   "f91ded4e4c4747c0": {
    "url": "https://daily.dev/posts/6-parallelism-strategies-for-llm-inference-in-production-8ilczbwd8",
    "title": "6 Parallelism Strategies for LLM Inference in Production",
+   "first_seen": "2026-10-16"
+  },
+  "ff3baa5d0476cd84": {
+   "url": "https://www.bloomberg.com/latest/the-ai-race",
+   "title": "The AI Race: Trending News, Latest Updates, Analysis",
    "first_seen": "2026-10-16"
   }
  }
