@@ -1,0 +1,35 @@
+{
+ "ran_at": "2026-10-16T05:53:26+00:00",
+ "checks": [
+  {
+   "id": "gmail",
+   "label": "Gmail sending",
+   "ok": true,
+   "detail": "Logged in as lakshit@moustachescapes.com."
+  },
+  {
+   "id": "llm-gemini",
+   "label": "AI: Gemini",
+   "ok": false,
+   "detail": "All LLM backends failed: gemini: retries exhausted"
+  },
+  {
+   "id": "llm-groq",
+   "label": "AI: Groq",
+   "ok": true,
+   "detail": "Working (model openai/gpt-oss-120b)."
+  },
+  {
+   "id": "llm-openrouter",
+   "label": "AI: OpenRouter",
+   "ok": null,
+   "detail": "No key set (OPENROUTER_API_KEY). Optional if another AI works."
+  },
+  {
+   "id": "search",
+   "label": "Web search",
+   "ok": true,
+   "detail": "Working via DuckDuckGo (3 results)."
+  }
+ ]
+}
