@@ -1,5 +1,52 @@
 {
  "version": 1,
  "repo": "giriraj-mouschache/ai-agents",
- "runs": []
+ "runs": [
+  {
+   "id": "20261016T050142Z",
+   "ran_at": "2026-10-16T05:01:42+00:00",
+   "date": "2026-10-16",
+   "kind": "workflow_dispatch",
+   "status": "ok",
+   "emailed": true,
+   "items": 18,
+   "errors": 0,
+   "llm": "",
+   "file": "digests/20261016T050142Z.json"
+  }
+ ],
+ "schedule": {
+  "label": "Every day at 08:00 (Asia/Kolkata)",
+  "time_ist": "08:00"
+ },
+ "topics": [
+  {
+   "name": "New AI advancements",
+   "goal": "Significant recent AI developments: new model releases, research breakthroughs, notable products and tools, and important safety or policy news. Skip hype, funding gossip and generic listicles.",
+   "queries": [
+    "new AI model release this week",
+    "AI research breakthrough announced",
+    "latest AI advancements news",
+    "new open source AI model released"
+   ]
+  },
+  {
+   "name": "AI and LLM engineering",
+   "goal": "New releases, techniques and tools for building LLM applications and agents that a working software engineer could use. Skip hype, funding news and generic listicles.",
+   "queries": [
+    "new open source LLM agent framework release",
+    "LLM agents production lessons learned",
+    "free tier LLM API changes"
+   ]
+  },
+  {
+   "name": "Remote freelance software leads",
+   "goal": "Concrete, recent opportunities for remote freelance or contract software work (web, backend, automation, AI integrations): job posts, hiring threads and clients asking for developers. Skip generic \"how to freelance\" advice and expired posts.",
+   "queries": [
+    "remote freelance developer contract hiring this week",
+    "looking for freelance developer automation AI integration"
+   ]
+  }
+ ],
+ "updated": "2026-10-16T05:01:42+00:00"
 }

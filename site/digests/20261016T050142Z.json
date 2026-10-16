@@ -1,0 +1,174 @@
+{
+ "version": 1,
+ "id": "20261016T050142Z",
+ "ran_at": "2026-10-16T05:01:42+00:00",
+ "date": "2026-10-16",
+ "kind": "workflow_dispatch",
+ "status": "ok",
+ "emailed": true,
+ "llm": "",
+ "tldr": [],
+ "sections": [
+  {
+   "name": "New AI advancements",
+   "items": [
+    {
+     "title": "Latest in AI: New Models, Projects & Releases (2026) | olud.ai",
+     "url": "https://olud.ai/latest.html",
+     "domain": "olud.ai",
+     "summary": "5 hours ago · What's new today in AI — the newest models, open-weight and commercial, trending GitHub projects, fresh Hugging Face Spaces and the AI paper of the day. Updated hourly.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "AI Updates Today (October 2026) – Latest AI Model Releases",
+     "url": "https://llm-stats.com/llm-updates",
+     "domain": "llm-stats.com",
+     "summary": "5 days ago · Track recent AI model releases, API changes, pricing updates, and feature launches across the major model providers in one daily changelog.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "LLM Updates (October 2026) - AI Model Releases & Provider ...",
+     "url": "https://lmmarketcap.com/llm-updates",
+     "domain": "lmmarketcap.com",
+     "summary": "5 hours ago · This page provides a live view of AI model releases and news. You can also check our leaderboard for ranked comparisons, the new-ai-models page for a detailed timeline, and the trending page to see which models are gaining momentum.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "New AI model releases: the last 30 days - BenchLeader",
+     "url": "https://www.benchleader.com/releases",
+     "domain": "benchleader.com",
+     "summary": "2 days ago · Musespark 1.3, Lfm 2.5 24B A2b, Muse Wonder and more: new AI models from the last 30 days, their first benchmark results and who ships next.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "AI Tools Launched This Week — Latest AI Apps | AIapps",
+     "url": "https://www.aiapps.com/this-week/",
+     "domain": "aiapps.com",
+     "summary": "5 hours ago · Discover the newest AI tools and apps launched this week. Updated continuously with the latest releases.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "New AI Models — October 2026 LLM Releases | LLM Gateway",
+     "url": "https://llmgateway.io/timeline",
+     "domain": "llmgateway.io",
+     "summary": "2 days ago · 13 new AI models released in October 2026 so far: Grok Voice 3.0, Muse Wonder 1.0. Every LLM release date, newest first. Updated daily.",
+     "why": "",
+     "score": null
+    }
+   ]
+  },
+  {
+   "name": "AI and LLM engineering",
+   "items": [
+    {
+     "title": "30 Best AI Agent GitHub Repos (October 2026) — Frameworks ...",
+     "url": "https://findarepo.com/categories/ai-agents/",
+     "domain": "findarepo.com",
+     "summary": "1 day ago · The best open-source AI agent frameworks and tools on GitHub, ranked daily by stars and measured momentum — build LLM agents that plan, call tools and ship.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "GitHub - dyronrh/awesome-agentops-landscape: A curated list ...",
+     "url": "https://github.com/dyronrh/awesome-agentops-landscape",
+     "domain": "github.com",
+     "summary": "2 days ago · What is AgentOps? AgentOps is the convergence of DevOps, MLOps, and LLMOps principles into a specialized operational discipline for autonomous LLM-powered agents.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Best Open Source LLMs | LLM Reference",
+     "url": "https://www.llmreference.com/best/open-source",
+     "domain": "llmreference.com",
+     "summary": "3 days ago · The best open-weight LLMs in 2026, ranked by benchmark scores. Run locally, self-host, or deploy on your own infra — no API key required.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "LLM Updates (October 2026) - AI Model Releases & Provider ...",
+     "url": "https://lmmarketcap.com/llm-updates",
+     "domain": "lmmarketcap.com",
+     "summary": "5 hours ago · This page provides a live view of AI model releases and news. You can also check our leaderboard for ranked comparisons, the new-ai-models page for a detailed timeline, and the trending page to see which models are gaining momentum.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Xplore-LAB/llm-tracker: 大模型情报局 - GitHub",
+     "url": "https://github.com/Xplore-LAB/llm-tracker",
+     "domain": "github.com",
+     "summary": "21 hours ago · 🤖 大模型情报局 | 每日自动追踪 arXiv 大模型前沿论文 | Daily LLM research tracker: 13k+ papers, 34 AI labs, model timeline & learning path - Xplore-LAB/llm-tracker",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Latest in AI: New Models, Projects & Releases (2026) | olud.ai",
+     "url": "https://olud.ai/latest.html",
+     "domain": "olud.ai",
+     "summary": "5 hours ago · What's new right now — the freshest models, open-weight and commercial, trending GitHub projects, new Hugging Face Spaces and the AI paper of the day. No fluff, updated hourly.",
+     "why": "",
+     "score": null
+    }
+   ]
+  },
+  {
+   "name": "Remote freelance software leads",
+   "items": [
+    {
+     "title": "Remote Contract Jobs | Contract & Freelance Remote Work ...",
+     "url": "https://www.remotesource.com/remote-jobs/contract",
+     "domain": "remotesource.com",
+     "summary": "1 day ago · Browse remote contract jobs from verified companies. Fully remote only — no office, no hybrid. Find contract and project-based remote work across all categories.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Remote Contract Jobs | Work From Anywhere",
+     "url": "https://anywhereremotejobs.com/employment/remote-contract-jobs",
+     "domain": "anywhereremotejobs.com",
+     "summary": "1 day ago · Find remote contract jobs from verified companies. Browse legitimate work from home and work from anywhere roles updated every 15 minutes.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Remote Jobs Posted Today | New Listings Updated Daily ...",
+     "url": "https://www.remotesource.com/remote-jobs/posted-today",
+     "domain": "remotesource.com",
+     "summary": "5 hours ago · Browse remote jobs posted in the last 24 hours. Hundreds of new fully remote positions added daily — no office, no hybrid. Updated continuously.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Remote Full-stack Developer Jobs | Frontend & Backend Roles",
+     "url": "https://wantremote.com/jobs/full-stack-developer",
+     "domain": "wantremote.com",
+     "summary": "1 day ago · Find remote full-stack developer jobs worldwide. JavaScript, TypeScript, Python, and PHP stacks, frontend frameworks and APIs, and modern full-stack delivery workflows. Apply to verified remote full-stack developer jobs today.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Remote Jobs - The Latest Fully-Remote Jobs, Updated Daily ...",
+     "url": "https://latestremote.com/",
+     "domain": "latestremote.com",
+     "summary": "5 hours ago · Remote jobs updated daily: the latest fully-remote roles from verified remote-first companies, every listing under 30 days old with salary shown. Browse now.",
+     "why": "",
+     "score": null
+    },
+    {
+     "title": "Freelance AI Jobs | Contract AI Work",
+     "url": "https://aitrainingjobs.org/freelance-ai-jobs/",
+     "domain": "aitrainingjobs.org",
+     "summary": "1 day ago · Find freelance AI jobs and contract expert gigs. Hourly and project-based roles in coding, law, medicine, languages, and more.",
+     "why": "",
+     "score": null
+    }
+   ]
+  }
+ ],
+ "errors": [],
+ "error": ""
+}
