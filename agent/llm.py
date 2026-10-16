@@ -199,12 +199,14 @@ class LLMClient:
             "Content-Type": "application/json",
         }
 
+        last_problem = ""
         for attempt in range(self.max_retries + 2):
             self._throttle()
             wait = min(60.0, 3.0 * (2**attempt))
             try:
                 resp = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
             except requests.RequestException as exc:
+                last_problem = f"network error ({type(exc).__name__})"
                 log.info("%s network error (%s); retrying", backend.name, type(exc).__name__)
             else:
                 if resp.status_code == 200:
@@ -229,9 +231,10 @@ class LLMClient:
                     retry_after = resp.headers.get("Retry-After", "")
                     if retry_after.isdigit():
                         wait = min(60.0, float(retry_after))
+                    last_problem = "rate limit reached (HTTP 429), try again later" if resp.status_code == 429 else f"service error (HTTP {resp.status_code})"
                     log.info("%s returned HTTP %s; retrying in %.0fs", backend.name, resp.status_code, wait)
                 else:
                     raise LLMError(f"HTTP {resp.status_code}: {resp.text[:200]}")
             if attempt < self.max_retries + 1:
                 time.sleep(wait)
-        raise LLMError(f"{backend.name}: retries exhausted")
+        raise LLMError(f"{backend.name}: {last_problem or 'retries exhausted'}")
