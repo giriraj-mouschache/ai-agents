@@ -1,10 +1,31 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { cfg, dispatch, getFile, GitHubError, listRuns, putFile } from "../lib/github.mjs";
-import { DEFAULT_SETTINGS, nextSlot, validateSettings } from "../lib/shared.mjs";
+import { DEFAULT_SETTINGS, LIMITS, nextSlot, validateSettings } from "../lib/shared.mjs";
+import { b64u, endpointOk, validSubscription, vapidKeys } from "../lib/push.mjs";
+import { deliverPending, loadSubs, saveSubs, sendAll } from "../lib/notify.mjs";
 
 const EMAIL_RE = /^[^@\s,;<>"']+@[^@\s,;<>"']+\.[^@\s,;<>"']+$/;
 const DATA_FILE_RE = /^(index|check|digests\/[A-Za-z0-9_-]{1,40})$/;
 const MIN_KEY_LENGTH = 12;
+const IDEA_ID_RE = /^[a-f0-9]{10}$/;
+const MAX_DEVICES = 10;
+
+const adminSecret = () => Netlify.env.get("ADMIN_KEY") || "";
+const subjectFor = (req) => `${new URL(req.url).origin}`;
+
+async function readJsonFile(path, fallback) {
+  const f = await getFile(path);
+  try { return { data: f ? JSON.parse(f.text) : fallback, sha: f?.sha }; } catch { return { data: fallback, sha: f?.sha }; }
+}
+
+async function setIdeaStatus(id, status) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data, sha } = await readJsonFile("site/idea-status.json", {});
+    data[id] = status;
+    try { return await putFile("site/idea-status.json", JSON.stringify(data, null, 1) + "\n", sha, `ideas: ${status} ${id}`); }
+    catch (e) { if (!(e instanceof GitHubError && e.status === 409) || attempt) throw e; }
+  }
+}
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -104,6 +125,61 @@ export default async (req, context) => {
       await dispatch({ test_email_to: to });
       return json({ started: true });
     }
+
+    if (route === "ideas" && req.method === "GET") {
+      const ideas = (await readJsonFile("site/ideas.json", {})).data;
+      const status = (await readJsonFile("site/idea-status.json", {})).data;
+      const pending = (ideas.ideas || []).filter((i) => !status[i.id]);
+      return json({ ideas: pending, radar: ideas.radar || [], last_scout: ideas.last_scout || null, accepted: Object.values(status).filter((v) => v === "accepted").length });
+    }
+
+    if (route === "ideas/decide" && req.method === "POST") {
+      const body = await req.json().catch(() => ({}));
+      if (!IDEA_ID_RE.test(body?.id || "") || !["accept", "decline"].includes(body?.decision)) return fail(400, "Unknown idea or choice.");
+      const ideas = (await readJsonFile("site/ideas.json", {})).data;
+      const idea = (ideas.ideas || []).find((i) => i.id === body.id);
+      if (!idea) return fail(404, "That idea is no longer available. Reload the page.");
+      if (body.decision === "decline") { await setIdeaStatus(idea.id, "declined"); return json({ ok: true }); }
+      const cur = await readSettings();
+      const next = structuredClone(cur.settings);
+      if (next.topics.length >= LIMITS.topics) return fail(400, `Your plan already has ${LIMITS.topics} topics. Remove one in Settings first.`);
+      if (next.topics.some((t) => t.name.toLowerCase() === idea.name.toLowerCase())) { await setIdeaStatus(idea.id, "accepted"); return json({ ok: true, already: true }); }
+      next.topics.push({ name: idea.name, goal: idea.goal, queries: idea.queries, timelimit: "w" });
+      const v = validateSettings(next);
+      if (v.error) return fail(400, v.error);
+      const sha = await putFile("settings.json", JSON.stringify(v.settings, null, 1) + "\n", cur.sha || undefined, `settings: add topic "${idea.name}" from trend idea`);
+      await setIdeaStatus(idea.id, "accepted");
+      return json({ ok: true, ...withNext({ settings: v.settings, sha }) });
+    }
+
+    if (route === "push/key" && req.method === "GET") return json({ public_key: b64u(vapidKeys(adminSecret()).pub) });
+
+    if (route === "push/subscribe" && req.method === "POST") {
+      const sub = (await req.json().catch(() => ({})))?.subscription;
+      if (!validSubscription(sub)) return fail(400, "That device could not be registered.");
+      const { subs, sha } = await loadSubs();
+      const entry = { endpoint: sub.endpoint, keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }, created: new Date().toISOString() };
+      const rest = subs.filter((x) => x.endpoint !== entry.endpoint);
+      await saveSubs([entry, ...rest].slice(0, MAX_DEVICES), sha);
+      return json({ ok: true, devices: Math.min(rest.length + 1, MAX_DEVICES) });
+    }
+
+    if (route === "push/unsubscribe" && req.method === "POST") {
+      const endpoint = (await req.json().catch(() => ({})))?.endpoint;
+      if (!endpointOk(endpoint)) return fail(400, "Unknown device.");
+      const { subs, sha } = await loadSubs();
+      if (subs.some((x) => x.endpoint === endpoint)) await saveSubs(subs.filter((x) => x.endpoint !== endpoint), sha);
+      return json({ ok: true });
+    }
+
+    if (route === "push/test" && req.method === "POST") {
+      const { subs, sha } = await loadSubs();
+      if (!subs.length) return fail(400, "No device is registered yet. Turn notifications on first.");
+      const r = await sendAll(subs, sha, [{ title: "Test notification", body: "Notifications are working on this device.", url: "/", tag: "test", kind: "test" }], adminSecret(), subjectFor(req));
+      return json(r);
+    }
+
+    if (route === "push/flush" && req.method === "POST") return json(await deliverPending({ secret: adminSecret(), subject: subjectFor(req) }));
 
     if (route === "progress" && req.method === "GET") return json({ runs: await listRuns(5) });
 

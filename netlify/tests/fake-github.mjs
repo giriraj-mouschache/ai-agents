@@ -3,6 +3,8 @@ export function installFakeGitHub({ repo = "owner/repo", token = "ghp_test", env
   const files = new Map();
   const dispatches = [];
   const runs = [];
+  const pushes = [];
+  const pushState = { status: 201 };
   let n = 0;
   const sha = () => `sha${++n}`;
   const realFetch = globalThis.fetch;
@@ -13,6 +15,10 @@ export function installFakeGitHub({ repo = "owner/repo", token = "ghp_test", env
 
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(typeof input === "string" ? input : input.url);
+    if (url.hostname === "fcm.googleapis.com") {
+      pushes.push({ url: url.href, headers: init.headers, body: Buffer.from(init.body) });
+      return new Response(null, { status: pushState.status });
+    }
     if (url.hostname !== "api.github.com") return realFetch(input, init);
     if (init.headers?.Authorization !== `Bearer ${token}`) return reply(401, { message: "Bad credentials" });
     const path = url.pathname.replace(`/repos/${repo}`, "");
@@ -45,7 +51,7 @@ export function installFakeGitHub({ repo = "owner/repo", token = "ghp_test", env
   };
 
   return {
-    files, dispatches, runs, vars,
+    files, dispatches, runs, vars, pushes, pushState,
     put: (name, text) => files.set(name, { text, sha: sha() }),
     restore: () => { globalThis.fetch = realFetch; },
   };

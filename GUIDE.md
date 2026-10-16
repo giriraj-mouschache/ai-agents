@@ -32,3 +32,11 @@ Never paste keys into the dashboard, into chat, or into files in the repo. If on
 
 ## What it costs
 Nothing: GitHub Actions, Netlify and the free AI tiers cover it. Free tiers have daily limits; if one runs out the agent tries the next AI you have a key for.
+
+## Rules, notifications and the trend radar
+
+**Rules** (Settings, Your rules): "when a result in [topic] mentions [words] then alert me / rank it higher / hide it". They run on every result before the email is built.
+
+**Notifications**: open the dashboard in Chrome, use the install icon in the address bar (Menu, Install) to add it as an app, then Settings, Notifications, Turn on for this device, and press Send a test notification. You only get what you tick: big finds (score at or above your number, or a rule that says alert), new topic ideas, and optionally each digest. On iPhone, add the page to the Home Screen first. Alerts are sent within about 15 minutes of a run, or at once if the dashboard is open.
+
+**Trend radar**: once a day the agent scans the areas you list and suggests up to 3 new topics (Ideas tab, plus the email and a notification). Add to my plan puts the topic into your settings; Not interested means it is never suggested again.

@@ -21,6 +21,7 @@ class Digest:
     tldr: list[str] = field(default_factory=list)
     sections: list[TopicResult] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    ideas: list[dict] = field(default_factory=list)  # new topic ideas from the trend scout
 
     @property
     def item_count(self) -> int:
@@ -66,6 +67,11 @@ def render_html(d: Digest) -> str:
             if item.why:
                 parts.append(f'<div style="margin-top:4px;color:#3d444d"><em>Why it matters:</em> {_e(item.why)}</div>')
             parts.append("</div>")
+    if d.ideas:
+        parts.append('<h3 style="margin:24px 0 8px;border-bottom:1px solid #d0d7de;padding-bottom:4px">Trend radar: topic ideas</h3>')
+        parts.append('<div style="color:#656d76;font-size:13px;margin-bottom:8px">Open your dashboard, Ideas tab, to add any of these to your plan.</div>')
+        for idea in d.ideas:
+            parts.append(f'<div style="margin:0 0 12px"><strong>{_e(idea["name"])}</strong><div>{_e(idea["why"])}</div></div>')
     if d.errors:
         parts.append('<h3 style="margin:24px 0 8px;color:#cf222e">Problems during this run</h3><ul>')
         parts.extend(f"<li>{_e(err)}</li>" for err in d.errors)
@@ -92,6 +98,11 @@ def render_text(d: Digest) -> str:
             if item.why:
                 lines.append(f"Why it matters: {item.why}")
             lines.append("")
+    if d.ideas:
+        lines.append("Trend radar: topic ideas (add them from the Ideas tab of your dashboard)")
+        for idea in d.ideas:
+            lines.append(f"  * {idea['name']}: {idea['why']}")
+        lines.append("")
     if d.errors:
         lines.append("Problems during this run:")
         lines.extend(f"  - {err}" for err in d.errors)

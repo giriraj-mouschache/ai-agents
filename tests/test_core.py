@@ -350,3 +350,100 @@ def test_setup_check_reports_missing_and_failing_parts(monkeypatch):
     assert items["llm-gemini"]["ok"] is None
     assert items["llm-any"]["ok"] is False
     assert items["search"]["ok"] is False
+
+
+# ---- rules, alerts, scout ----
+
+def _rule(action, match, topic="", name="R"):
+    return {"name": name, "topic": topic, "match": match, "action": action}
+
+
+def test_rules_mute_boost_notify():
+    from agent.rules import apply_rules
+
+    items = [Item("T", "Sponsored: buy now", "https://a.com/1", "ad", "", 9),
+             Item("T", "Kubernetes tips", "https://a.com/2", "about kubernetes", "", 5),
+             Item("T", "Plain news", "https://a.com/3", "nothing", "", 4),
+             Item("T", "Unscored kubernetes", "https://a.com/4", "kubernetes", "", None)]
+    rules = [_rule("mute", ["sponsored"]), _rule("boost", ["Kubernetes"]), _rule("notify", ["tips"], name="Tips"),
+             _rule("boost", ["plain"], topic="Other topic")]
+    out = apply_rules("T", items, rules)
+    assert [i.url for i in out] == ["https://a.com/2", "https://a.com/3", "https://a.com/4"]
+    assert out[0].score == 7 and out[0].notify and out[0].rule == "Tips"
+    assert out[1].score == 4  # rule scoped to another topic does not apply
+    assert out[2].score is None  # unscored items are not boosted
+
+
+def test_rules_keep_low_scored_notify_items_in_digest(tmp_path):
+    cfg = make_cfg(min_score=7)
+    cfg["rules"] = [_rule("notify", ["summary 1"], name="Watch")]
+    table = {"q1": [Result("A", "https://a.com/1", "s"), Result("B", "https://a.com/2", "s")]}
+    res = run_topic({"name": "T", "goal": "g", "queries": ["q1"]}, cfg, FakeLLM(scores={1: 3, 2: 3}), SeenStore(tmp_path / "s.json"),
+                    "2026-10-15", search_fn=fake_search_factory(table), fetch_fn=fake_fetch)
+    assert [i.url for i in res.items] == ["https://a.com/1"] or [i.url for i in res.items] == ["https://a.com/2"]
+    assert res.items[0].notify
+
+
+def test_build_alerts_respects_settings():
+    from agent.alerts import build_alerts
+
+    items = [Item("AI", "Big news", "https://a.com/1", "s", "", 9.5), Item("AI", "Ok", "https://a.com/2", "s", "", 6),
+             Item("AI", "Rule hit", "https://a.com/3", "s", "", 5, notify=True, rule="Watch")]
+    d = Digest(date="2026-10-16", sections=[TopicResult("AI", items)])
+    notify = {"digest": True, "alerts": True, "ideas": True, "min_score": 9}
+    out = build_alerts(d, notify, [{"name": "Edge AI"}])
+    assert [a["kind"] for a in out] == ["alert", "alert", "digest", "ideas"]
+    assert "Watch" in out[1]["body"] and out[3]["url"] == "/?tab=ideas"
+    assert build_alerts(d, {**notify, "alerts": False, "digest": False, "ideas": False}, [{"name": "x"}]) == []
+    bad = Digest(date="x", sections=[TopicResult("AI", [Item("AI", "t", "javascript:alert(1)", "s", "", 10)])])
+    assert build_alerts(bad, notify, [])[0]["url"] == "/"
+
+
+class ScoutLLM:
+    def __init__(self, ideas):
+        self.ideas = ideas
+
+    def json(self, system, user, **kw):
+        return {"radar": [{"area": "AI", "note": "Edge inference is rising."}], "ideas": self.ideas}
+
+
+def test_scout_creates_dedupes_and_respects_decisions(tmp_path):
+    from datetime import datetime, timezone
+
+    from agent.scout import idea_id, run_scout
+    from agent.settings import normalize
+
+    settings = normalize({"topics": [{"name": "AI engineering", "queries": ["q"]}], "radar": {"enabled": True, "areas": ["AI"]}})
+    cfg = _merge(DEFAULTS, {})
+    table = lambda q, sc, topic=None: [Result("Trend piece", "https://t.com/a", "snippet")]
+    ideas = [
+        {"name": "Edge AI inference", "area": "AI", "why": "Chips are shipping.", "goal": "g", "queries": ["edge ai"], "confidence": 8, "evidence": [1]},
+        {"name": "AI engineering", "area": "AI", "why": "dupe of tracked", "goal": "g", "queries": ["x"], "confidence": 9, "evidence": [1]},
+        {"name": "Weak idea", "area": "AI", "why": "w", "goal": "g", "queries": ["x"], "confidence": 3, "evidence": [1]},
+        {"name": "No queries", "area": "AI", "why": "w", "goal": "g", "queries": [], "confidence": 9, "evidence": [1]},
+    ]
+    now = datetime(2026, 10, 16, 4, 0, tzinfo=timezone.utc)
+    new = run_scout(cfg, ScoutLLM(ideas), tmp_path, settings, now, "2026-10-16", search_fn=table, fetch_fn=fake_fetch)
+    assert [i["name"] for i in new] == ["Edge AI inference"]
+    assert new[0]["sources"] == [{"title": "Trend piece", "url": "https://t.com/a"}]
+    saved = json.loads((tmp_path / "site" / "ideas.json").read_text())
+    assert saved["last_scout"] == "2026-10-16" and saved["radar"][0]["note"].startswith("Edge")
+    # same day: no second scan
+    assert run_scout(cfg, ScoutLLM(ideas), tmp_path, settings, now, "2026-10-16", search_fn=table, fetch_fn=fake_fetch) == []
+    # next day: a declined idea is never re-suggested, and pending ones are kept
+    (tmp_path / "site" / "idea-status.json").write_text(json.dumps({idea_id("Edge AI inference"): "declined"}))
+    again = run_scout(cfg, ScoutLLM(ideas), tmp_path, settings, now, "2026-10-17", search_fn=table, fetch_fn=fake_fetch)
+    assert again == []
+    saved = json.loads((tmp_path / "site" / "ideas.json").read_text())
+    assert saved["ideas"] == [] and "Edge AI inference" in saved["declined_names"]
+
+
+def test_settings_normalize_rules_notify_radar():
+    from agent.settings import normalize
+
+    s = normalize({"rules": [{"name": "", "topic": "AI", "match": [" gpt ", "", "gpt"], "action": "boost"},
+                             {"match": ["x"], "action": "explode"}, {"match": [], "action": "mute"}],
+                   "notify": {"digest": True, "min_score": 99}, "radar": {"enabled": False, "areas": ["A", "a ", "", "B"]}})
+    assert s["rules"] == [{"name": "Rule 1", "topic": "AI", "match": ["gpt"], "action": "boost"}]
+    assert s["notify"] == {"digest": True, "alerts": True, "ideas": True, "min_score": 9}
+    assert s["radar"] == {"enabled": False, "areas": ["A", "a", "B"]}

@@ -11,6 +11,8 @@ DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):([0-5]\d)$")
 EMAIL_RE = re.compile(r"^[^@\s,;<>\"']+@[^@\s,;<>\"']+\.[^@\s,;<>\"']+$")
 MAX_TOPICS, MAX_QUERIES, MAX_TIMES = 10, 8, 6
+MAX_RULES, MAX_KEYWORDS, MAX_AREAS = 10, 8, 5
+RULE_ACTIONS = ('notify', 'boost', 'mute')
 
 DEFAULT_SETTINGS: dict = {
     "version": 1,
@@ -18,6 +20,9 @@ DEFAULT_SETTINGS: dict = {
     "schedule": {"times": ["08:00"], "days": [0, 1, 2, 3, 4, 5, 6], "timezone": "Asia/Kolkata"},
     "email": {"to": "", "send_when_empty": False},
     "weekly": {"enabled": False, "day": 6},
+    "notify": {"digest": False, "alerts": True, "ideas": True, "min_score": 9},
+    "radar": {"enabled": True, "areas": ["AI and software engineering", "Remote and freelance work", "Startups and market trends"]},
+    "rules": [],
     "min_score": 6,
     "topics": [],
 }
@@ -71,6 +76,35 @@ def normalize(raw) -> dict:
     if isinstance(wd, int) and not isinstance(wd, bool) and 0 <= wd <= 6:
         out["weekly"]["day"] = wd
 
+    notify = raw.get("notify") if isinstance(raw.get("notify"), dict) else {}
+    for key in ("digest", "alerts", "ideas"):
+        if key in notify:
+            out["notify"][key] = notify[key] is True
+    ns = notify.get("min_score")
+    if isinstance(ns, int) and not isinstance(ns, bool) and 1 <= ns <= 10:
+        out["notify"]["min_score"] = ns
+
+    radar = raw.get("radar") if isinstance(raw.get("radar"), dict) else {}
+    if "enabled" in radar:
+        out["radar"]["enabled"] = radar["enabled"] is True
+    if isinstance(radar.get("areas"), list):
+        out["radar"]["areas"] = list(dict.fromkeys(" ".join(str(a).split())[:80] for a in radar["areas"] if str(a).strip()))[:MAX_AREAS]
+
+    rules = []
+    for i, r in enumerate((raw.get("rules") or [])[:MAX_RULES] if isinstance(raw.get("rules"), list) else []):
+        if not isinstance(r, dict) or r.get("action") not in RULE_ACTIONS:
+            continue
+        match = list(dict.fromkeys(" ".join(str(k).split())[:60] for k in (r.get("match") or []) if str(k).strip()))[:MAX_KEYWORDS]
+        if not match:
+            continue
+        rules.append({
+            "name": " ".join(str(r.get("name") or f"Rule {i + 1}").split())[:60] or f"Rule {i + 1}",
+            "topic": " ".join(str(r.get("topic") or "").split())[:80],
+            "match": match,
+            "action": r["action"],
+        })
+    out["rules"] = rules
+
     ms = raw.get("min_score")
     if isinstance(ms, int) and not isinstance(ms, bool) and 1 <= ms <= 10:
         out["min_score"] = ms
@@ -116,6 +150,9 @@ def apply_settings(cfg: dict, settings: dict) -> dict:
         cfg["topics"] = copy.deepcopy(settings["topics"])
     cfg["research"]["min_score"] = settings["min_score"]
     cfg["email"]["send_when_empty"] = settings["email"]["send_when_empty"]
+    cfg["rules"] = settings["rules"]
+    cfg["notify"] = settings["notify"]
+    cfg["radar"] = settings["radar"]
     cfg["site"]["schedule_label"] = schedule_label(settings["schedule"])
     cfg["site"]["schedule_ist"] = settings["schedule"]["times"][0]
     return cfg

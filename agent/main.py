@@ -14,7 +14,8 @@ from .emailer import Digest, make_subject, render_html, render_text, send_email
 from .history import IST, record_run
 from .llm import LLMClient
 from .research import Item, TopicResult, make_tldr, run_topic
-from . import weekly
+from . import scout, weekly
+from .alerts import build_alerts, write_alerts
 from .settings import apply_settings, load_settings
 from .store import SeenStore
 
@@ -139,10 +140,17 @@ def main(argv: list[str] | None = None) -> int:
             log.exception("Topic '%s' failed", topic["name"])
             errors.append(f"{topic['name']}: {type(exc).__name__}: {str(exc)[:200]}")
 
+    new_ideas: list[dict] = []
+    if args.data_dir and settings and not args.dry_run and not args.topic:
+        try:
+            new_ideas = scout.run_scout(cfg, llm, Path(args.data_dir), settings, datetime.now(timezone.utc), today)
+        except Exception:  # the scout is a bonus; it must never break the digest
+            log.exception("Trend scout crashed")
+
     if any(r.llm_failed for r in results):
         why = "; ".join(dict.fromkeys(llm.failures))[:400] or "no details"
         errors.append(f"The AI step failed, so these results are unranked and unsummarised ({why}). Check the AI keys in GitHub secrets.")
-    digest = Digest(date=today, sections=results, errors=errors)
+    digest = Digest(date=today, sections=results, errors=errors, ideas=new_ideas)
     if cfg["email"]["tldr"] and digest.item_count:
         digest.tldr = make_tldr(llm, results, today)
 
@@ -169,8 +177,9 @@ def main(argv: list[str] | None = None) -> int:
 
     # Record the run for the dashboard, failures included, so a bad or missed day is visible there.
     status = "failed" if send_error else ("partial" if errors else "ok")
+    entry = None
     try:
-        record_run(
+        entry = record_run(
             cfg["site"]["data_dir"],
             cfg,
             digest,
@@ -186,6 +195,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if send_error:
         raise send_error
+
+    if args.data_dir and entry and status != "failed":
+        try:
+            write_alerts(Path(args.data_dir), entry["id"], build_alerts(digest, cfg["notify"], new_ideas))
+        except OSError:
+            log.exception("Could not write alerts")
 
     # Only remember URLs after the email went out, so a failed send is retried next run.
     for r in results:

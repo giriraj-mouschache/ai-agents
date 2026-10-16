@@ -91,6 +91,64 @@ test("check route starts the setup check and its result is served", async () => 
   assert.equal((await (await call("data?file=check")).json()).checks[0].id, "gmail");
 });
 
+const subscription = async () => {
+  const { createECDH, randomBytes } = await import("node:crypto");
+  const ua = createECDH("prime256v1"); ua.generateKeys();
+  return { endpoint: "https://fcm.googleapis.com/fcm/send/device1", keys: { p256dh: ua.getPublicKey().toString("base64url"), auth: randomBytes(16).toString("base64url") } };
+};
+
+test("push: key, subscribe, test notification, prune dead devices", async () => {
+  const key = (await (await call("push/key")).json()).public_key;
+  assert.equal(Buffer.from(key, "base64url").length, 65);
+  assert.equal((await call("push/subscribe", { method: "POST", body: { subscription: { endpoint: "https://evil.test/x", keys: {} } } })).status, 400);
+  const sub = await subscription();
+  assert.equal((await (await call("push/subscribe", { method: "POST", body: { subscription: sub } })).json()).devices, 1);
+  gh.pushes.length = 0;
+  const r = await (await call("push/test", { method: "POST" })).json();
+  assert.equal(r.sent, 1);
+  assert.match(gh.pushes[0].headers.Authorization, /^vapid t=.+, k=/);
+  assert.equal(gh.pushes[0].headers["Content-Encoding"], "aes128gcm");
+  gh.pushState.status = 410;
+  const gone = await (await call("push/test", { method: "POST" })).json();
+  assert.equal(gone.removed, 1);
+  assert.deepEqual(JSON.parse(gh.files.get("subscriptions.json").text), []);
+  gh.pushState.status = 201;
+  assert.equal((await call("push/test", { method: "POST" })).status, 400);
+});
+
+test("push: queued alerts are delivered once per run, by the page or the timer", async () => {
+  const sub = await subscription();
+  await call("push/subscribe", { method: "POST", body: { subscription: sub } });
+  gh.put("site/alerts.json", JSON.stringify({ batch: "run1", created: new Date().toISOString(), items: [
+    { kind: "alert", tag: "a", title: "Big", body: "b", url: "https://x.com" }, { kind: "ideas", tag: "i", title: "Idea", body: "b", url: "/?tab=ideas" }] }));
+  gh.files.delete("push-state.json");
+  gh.pushes.length = 0;
+  assert.equal((await (await call("push/flush", { method: "POST" })).json()).sent, 2);
+  assert.equal((await (await call("push/flush", { method: "POST" })).json()).reason, "already sent");
+  await tick();
+  assert.equal(gh.pushes.length, 2);
+  gh.put("site/alerts.json", JSON.stringify({ batch: "old", created: "2020-01-01T00:00:00Z", items: [{ title: "t", body: "b", url: "/" }] }));
+  assert.equal((await (await call("push/flush", { method: "POST" })).json()).reason, "too old");
+});
+
+test("ideas: list, decline remembers, accept adds the topic to the plan", async () => {
+  gh.put("settings.json", JSON.stringify(good()));
+  gh.files.delete("site/idea-status.json");
+  const idea = (n, id) => ({ id, name: n, goal: "g", queries: ["q1", "q2"], why: "w", confidence: 8, sources: [] });
+  gh.put("site/ideas.json", JSON.stringify({ last_scout: "2026-10-16", radar: [{ area: "AI", note: "n" }], ideas: [idea("Edge AI", "aaaaaaaaaa"), idea("Agent payments", "bbbbbbbbbb")] }));
+  let r = await (await call("ideas")).json();
+  assert.equal(r.ideas.length, 2);
+  assert.equal((await call("ideas/decide", { method: "POST", body: { id: "nope", decision: "accept" } })).status, 400);
+  assert.equal((await call("ideas/decide", { method: "POST", body: { id: "cccccccccc", decision: "accept" } })).status, 404);
+  assert.equal((await call("ideas/decide", { method: "POST", body: { id: "aaaaaaaaaa", decision: "decline" } })).status, 200);
+  const acc = await (await call("ideas/decide", { method: "POST", body: { id: "bbbbbbbbbb", decision: "accept" } })).json();
+  assert.deepEqual(acc.settings.topics.map((t) => t.name), ["AI", "Agent payments"]);
+  assert.deepEqual(JSON.parse(gh.files.get("settings.json").text).topics[1].queries, ["q1", "q2"]);
+  r = await (await call("ideas")).json();
+  assert.equal(r.ideas.length, 0);
+  assert.deepEqual(JSON.parse(gh.files.get("site/idea-status.json").text), { aaaaaaaaaa: "declined", bbbbbbbbbb: "accepted" });
+});
+
 test("a bad GitHub token is reported clearly, not leaked", async () => {
   const saved = gh.vars.GITHUB_TOKEN;
   gh.vars.GITHUB_TOKEN = "ghp_wrong";

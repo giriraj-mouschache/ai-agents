@@ -2,10 +2,15 @@
 // The workflow re-checks with the same rules (agent/gate.py), so a duplicate trigger never sends two emails.
 import { cfg, dispatch, getFile, listRuns } from "../lib/github.mjs";
 import { dueSlot, parseTs, DEFAULT_SETTINGS } from "../lib/shared.mjs";
+import { deliverPending } from "../lib/notify.mjs";
 
-export default async () => {
+export default async (req, context) => {
   if (!cfg().token) { console.log("tick: GITHUB_TOKEN not set, nothing to do"); return; }
   try {
+    try {
+      const r = await deliverPending({ secret: Netlify.env.get("ADMIN_KEY") || "", subject: context?.site?.url || "mailto:admin@example.com" });
+      if (r.sent) console.log("tick: sent", r.sent, "notification(s)");
+    } catch (e) { console.error("tick push failed:", e?.message); }
     const sf = await getFile("settings.json");
     const settings = sf ? { ...DEFAULT_SETTINGS, ...JSON.parse(sf.text) } : DEFAULT_SETTINGS;
     if (settings.paused) { console.log("tick: paused"); return; }

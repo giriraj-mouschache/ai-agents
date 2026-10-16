@@ -8,7 +8,7 @@ const RUN_ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 const S = {
   status: null, key: "", settings: null, saved: null, sha: null, nextRun: null, settingsNote: "",
-  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false, check: null,
+  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false, check: null, ideas: null,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -120,6 +120,8 @@ function renderHeader() {
   pause.disabled = Boolean(S.busy);
   $("#btn-run").disabled = Boolean(S.busy);
   document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === S.view)));
+  const n = S.ideas?.ideas?.length || 0, badge = $("#ideas-badge");
+  badge.hidden = !n; badge.textContent = String(n);
 }
 
 // ---------- views ----------
@@ -129,7 +131,7 @@ function render() {
   if (!S.status) return;
   if (!S.status.github_token || !S.status.admin_key) return main.append(setupView());
   if (S.locked || !S.settings) return main.append(unlockView());
-  main.append(S.view === "settings" ? settingsView() : S.view === "health" ? healthView() : digestsView());
+  main.append(S.view === "settings" ? settingsView() : S.view === "health" ? healthView() : S.view === "ideas" ? ideasView() : digestsView());
 }
 
 function setupView() {
@@ -279,8 +281,136 @@ async function runCheck() {
 }
 
 // ---------- settings ----------
+
+// ---------- ideas (trend radar) ----------
+async function loadIdeas() { try { S.ideas = await api("ideas"); } catch (e) { if (e.status !== 401) S.ideas = S.ideas || { ideas: [], radar: [], last_scout: null }; } }
+
+function ideasView() {
+  const d = S.ideas || { ideas: [], radar: [] };
+  const root = h("div", {});
+  const on = S.settings?.radar?.enabled !== false;
+  root.append(h("section", { class: "card" }, h("h2", { text: "Topic ideas for you" }),
+    h("p", { class: "hint", text: on ? "Once a day the agent scans what is rising in your areas and suggests topics worth tracking. Add one to your plan, or skip it and it will not be suggested again." : "The trend radar is off. Turn it on in Settings, under Trend radar." }),
+    h("div", { class: "body" }, d.ideas.length ? d.ideas.map((i) => ideaCard(i)) : h("p", { class: "help", text: d.last_scout ? `No new ideas right now. The radar last looked on ${d.last_scout}. New ideas appear after its next daily scan.` : "No ideas yet. The first scan happens with the next scheduled run." }))));
+  if (d.radar?.length) root.append(h("section", { class: "card" }, h("h2", { text: "What the radar noticed" }), h("div", { class: "body" },
+    h("ul", { class: "radar" }, d.radar.map((r) => h("li", {}, h("strong", { text: `${r.area}: ` }), r.note))))));
+  return root;
+}
+
+function ideaCard(i) {
+  const srcs = (i.sources || []).map((u) => safeHref(u?.url || u)).filter(Boolean).slice(0, 3);
+  const act = async (decision, btns) => {
+    btns.forEach((b) => { b.disabled = true; });
+    try {
+      const r = await api("ideas/decide", { method: "POST", body: { id: i.id, decision } });
+      S.ideas.ideas = S.ideas.ideas.filter((x) => x.id !== i.id);
+      if (decision === "accept" && r.settings) {
+        const mine = dirty() ? S.settings : null; // keep unsaved edits made in Settings
+        S.saved = clone(r.settings); S.sha = r.sha || S.sha; S.nextRun = r.next_run ?? S.nextRun;
+        S.settings = mine ? { ...mine, topics: [...mine.topics, r.settings.topics[r.settings.topics.length - 1]] } : clone(r.settings);
+      }
+      toast(decision === "accept" ? `Added "${i.name}" to your plan. It will be in your next digest.` : `Got it. "${i.name}" will not be suggested again.`);
+    } catch (e) { toast(e.message, "bad", true); btns.forEach((b) => { b.disabled = false; }); return; }
+    render();
+  };
+  const add = h("button", { type: "button", class: "btn primary" }, "Add to my plan");
+  const no = h("button", { type: "button", class: "btn" }, "Not interested");
+  add.onclick = () => act("accept", [add, no]); no.onclick = () => act("decline", [add, no]);
+  return h("article", { class: "idea" }, h("h3", { text: i.name }),
+    h("div", { class: "tags" }, i.area ? h("span", { class: "pill", text: i.area }) : null, h("span", { text: `Confidence ${i.confidence}/10` })),
+    h("p", { class: "summary", text: i.why }),
+    i.goal ? h("p", { class: "why", text: `It would look for: ${i.goal}` }) : null,
+    srcs.length ? h("ul", { class: "src" }, srcs.map((u) => h("li", {}, h("a", { href: u, target: "_blank", rel: "noopener noreferrer", text: new URL(u).hostname })))) : null,
+    h("div", { class: "acts" }, add, no));
+}
+
+// ---------- notifications (installable app + push) ----------
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const b64uToBytes = (b) => Uint8Array.from(atob(b.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(b.length / 4) * 4, "=")), (c) => c.charCodeAt(0));
+async function currentSub() { try { const reg = await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); } catch { return null; } }
+
+async function enablePush() {
+  if (!pushSupported()) throw new Error("This browser cannot show notifications. On iPhone, add the app to your Home Screen first.");
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") throw new Error("Notifications are blocked. Allow them in your browser's site settings, then try again.");
+  const reg = await navigator.serviceWorker.ready;
+  const { public_key } = await api("push/key");
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(public_key) });
+  await api("push/subscribe", { method: "POST", body: { subscription: sub.toJSON() } });
+}
+async function disablePush() {
+  const sub = await currentSub();
+  if (sub) { try { await api("push/unsubscribe", { method: "POST", body: { endpoint: sub.endpoint } }); } catch { /* removed on next failed send */ } await sub.unsubscribe().catch(() => {}); }
+}
+
+function notifyCard(touch) {
+  const n = S.settings.notify, box = h("div", { class: "body" });
+  const draw = async () => {
+    const sub = pushSupported() ? await currentSub() : null;
+    const on = Boolean(sub) && Notification.permission === "granted";
+    const status = h("p", { class: "summary-line", id: "push-status", text: !pushSupported() ? "This browser cannot show notifications. On iPhone or iPad, add this page to your Home Screen first." : on ? "Notifications are on for this device." : Notification.permission === "denied" ? "Notifications are blocked for this site. Allow them in your browser's site settings." : "Notifications are off on this device." });
+    const msg = h("p", { class: "help", id: "push-msg", role: "status" });
+    const btn = h("button", { type: "button", class: on ? "btn" : "btn primary", id: "btn-push", disabled: !pushSupported(), onclick: async () => {
+      btn.disabled = true;
+      try { if (on) await disablePush(); else await enablePush(); } catch (e) { toast(e.message, "bad", true); }
+      draw();
+    } }, on ? "Turn off on this device" : "Turn on for this device");
+    const test = on ? h("button", { type: "button", class: "btn", id: "btn-push-test", onclick: async () => {
+      test.disabled = true; msg.textContent = "Sending.";
+      try {
+        const r = await api("push/test", { method: "POST" });
+        msg.textContent = r.sent ? "Sent. It should appear in a few seconds." : r.removed ? "This device was no longer valid and was removed. Turn notifications on again." : `The push service refused it (code ${(r.failed || [])[0] || "unknown"}). Turn notifications off and on again.`;
+      } catch (e) { msg.textContent = e.message; }
+      test.disabled = false;
+    } }, "Send a test notification") : null;
+    const tog = (key, label, help) => h("label", { class: "check-row", style: "margin-top:12px" }, h("input", { type: "checkbox", checked: n[key], onchange: (e) => { n[key] = e.target.checked; touch(); } }), h("span", {}, label, h("span", { class: "help", text: help })));
+    const ms = h("input", { type: "range", min: 1, max: 10, step: 1, value: n.min_score, id: "nms", "aria-label": "Minimum score for an alert", oninput: (e) => { n.min_score = Number(e.target.value); out.textContent = String(n.min_score); touch(); } });
+    const out = h("output", { for: "nms", text: String(n.min_score) });
+    box.replaceChildren(status, h("div", { class: "row" }, btn, test), msg,
+      tog("alerts", "Big finds", "A short alert when a result scores at or above the number below, or matches one of your rules."),
+      h("div", { class: "field" }, h("label", { for: "nms", text: "Alert only at this score or higher" }), h("div", { class: "range" }, ms, out)),
+      tog("ideas", "New topic ideas", "A ping when the trend radar has something new for you."),
+      tog("digest", "Digest ready", "A ping each time a digest is sent. Off by default, the email already covers this."),
+      h("p", { class: "help", text: "Notification choices are saved with the Save changes button. Turning a device on or off applies at once." }));
+  };
+  draw();
+  return h("section", { class: "card", id: "notify-card" }, h("h2", { text: "Notifications" }),
+    h("p", { class: "hint", text: "Install this page as an app (Chrome: the install icon in the address bar, or Menu, Install) and get only the alerts you choose." }), box);
+}
+
+// ---------- rules ----------
+function rulesCard(touch) {
+  const s = S.settings, box = h("div", { class: "body" });
+  const topicNames = s.topics.map((t) => t.name).filter(Boolean);
+  const draw = () => {
+    box.replaceChildren(...[...s.rules.map((r, i) => h("div", { class: "rule-card" },
+      h("div", { class: "field", style: "margin:0" }, h("label", { for: `rn${i}`, text: "Rule name" }), h("input", { type: "text", id: `rn${i}`, value: r.name || "", maxlength: 60, placeholder: `Rule ${i + 1}`, oninput: (e) => { r.name = e.target.value; touch(); } })),
+      h("div", { class: "rule-line" }, h("span", { text: "When a result in" }),
+        h("select", { "aria-label": "Which topic", onchange: (e) => { r.topic = e.target.value; touch(); } }, h("option", { value: "", text: "any topic", selected: !r.topic }), ...[...new Set([...(r.topic ? [r.topic] : []), ...topicNames])].map((t) => h("option", { value: t, text: t, selected: t === r.topic }))),
+        h("span", { text: "mentions" })),
+      h("div", { class: "rule-line" }, h("input", { type: "text", "aria-label": "Words to look for, separated by commas", placeholder: "words, separated by commas", value: (r.match || []).join(", "), oninput: (e) => { r.match = e.target.value.split(",").map((x) => x.trim()).filter(Boolean); touch(); } })),
+      h("div", { class: "rule-line" }, h("span", { text: "then" }),
+        h("select", { "aria-label": "What to do", onchange: (e) => { r.action = e.target.value; touch(); } }, [["notify", "alert me right away"], ["boost", "rank it higher"], ["mute", "hide it"]].map(([v, l]) => h("option", { value: v, text: l, selected: v === (r.action || "notify") }))),
+        h("button", { type: "button", class: "btn danger-quiet", "aria-label": `Delete rule ${r.name || i + 1}`, onclick: () => { s.rules.splice(i, 1); draw(); touch(); } }, "Delete"))),
+    ), s.rules.length ? null : h("p", { class: "help", text: "No rules yet. Example: when a result in any topic mentions \"funding, raises\" then alert me right away." }),
+    s.rules.length < 10 ? h("button", { type: "button", class: "btn", id: "btn-add-rule", onclick: () => { s.rules.push({ name: "", topic: "", match: [], action: "notify" }); draw(); touch(); } }, "+ Add a rule") : null].filter(Boolean));
+  };
+  draw();
+  return h("section", { class: "card", id: "rules-card" }, h("h2", { text: "Your rules" }), h("p", { class: "hint", text: "Teach the agent what matters to you. Rules run on every result before it is emailed: alert you, rank it higher, or hide it." }), box);
+}
+
+function radarCard(touch) {
+  const r = S.settings.radar;
+  const on = h("input", { type: "checkbox", id: "radar-on", checked: r.enabled, onchange: (e) => { r.enabled = e.target.checked; areas.disabled = !e.target.checked; touch(); } });
+  const areas = h("textarea", { id: "radar-areas", disabled: !r.enabled, "aria-label": "Areas to watch, one per line", oninput: (e) => { r.areas = e.target.value.split("\n").map((x) => x.trim()).filter(Boolean); touch(); } }, (r.areas || []).join("\n"));
+  return h("section", { class: "card", id: "radar-card" }, h("h2", { text: "Trend radar" }), h("p", { class: "hint", text: "Once a day the agent looks at what is rising in the areas below and suggests new topics. You decide what joins your plan." }),
+    h("div", { class: "body" }, h("label", { class: "check-row", for: "radar-on" }, on, h("span", {}, "Suggest new topics daily")),
+      h("div", { class: "field", style: "margin-top:12px" }, h("label", { for: "radar-areas" }, "Areas to watch", h("span", { class: "help", text: "One per line, up to 5. Broad is fine, like \"Healthcare technology\"." })), areas)));
+}
+
 function settingsView() {
   const s = S.settings;
+  s.rules ||= []; s.notify ||= { digest: false, alerts: true, ideas: true, min_score: 9 }; s.radar ||= { enabled: true, areas: [] };
   const root = h("div", {});
   const touch = () => { updateSavebar(); };
   const rerender = (focusSel) => { const y = scrollY; main.replaceChildren(settingsView()); scrollTo(0, y); if (focusSel) document.querySelector(focusSel)?.focus(); renderHeader(); };
@@ -347,6 +477,7 @@ function settingsView() {
         h("p", {}, h("button", { type: "button", class: "btn", id: "btn-test", onclick: () => sendTest(to.value.trim()) }, "Send a test email")))),
     h("section", { class: "card" }, h("h2", { text: "How picky should it be?" }), h("p", { class: "hint", text: "The AI gives every result a relevance score from 1 to 10. Only results at or above this number are emailed." }),
       h("div", { class: "body" }, h("label", { for: "ms", text: "Minimum relevance" }), h("div", { class: "range" }, ms, out), label)),
+    rulesCard(touch), notifyCard(touch), radarCard(touch),
     h("section", { class: "card" }, h("h2", { text: "This device" }), h("p", { class: "hint", text: "Locking forgets your access key here. Nothing else changes." }),
       h("div", { class: "body" }, h("button", { type: "button", class: "btn", onclick: () => { store.set(""); S.key = ""; S.settings = null; S.locked = true; render(); } }, "Lock this device"))));
 
@@ -405,7 +536,8 @@ async function track(label, since, doneText, { view = "digests", after } = {}) {
       seen = true;
       if (run.status === "completed") {
         S.busy = "";
-        await loadIndex();
+        await loadIndex(); await loadIdeas();
+        api("push/flush", { method: "POST" }).catch(() => {});
         if (run.conclusion === "success") toast(doneText);
         else toast("The run did not finish properly. Open the newest result for details.", "bad", true);
         if (after) await after();
@@ -445,7 +577,7 @@ async function loadAll() {
   S.settings = r.settings; S.saved = clone(r.settings); S.sha = r.sha; S.nextRun = r.next_run;
   S.settingsNote = r.missing ? "No saved settings yet. Press Save to create them." : r.broken ? "The saved settings file was unreadable, so defaults are shown." : "";
   S.forceDirty = Boolean(r.missing || r.broken); // nothing valid is saved yet, so offer Save straight away
-  await loadIndex();
+  await loadIndex(); await loadIdeas();
   const m = /^#run=([\w-]+)$/.exec(location.hash);
   S.selected = m ? m[1] : null;
 }
@@ -457,8 +589,11 @@ async function boot() {
     S.key = store.get();
     if (S.key) { try { await loadAll(); S.locked = false; } catch { S.locked = true; } } else S.locked = true;
   }
+  const tab = new URLSearchParams(location.search).get("tab");
+  if (!S.locked && ["ideas", "settings", "health"].includes(tab)) S.view = tab;
   render();
 }
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
 document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", async () => {
   S.view = b.dataset.tab; render();

@@ -2,7 +2,8 @@
 // both sides are checked against tests/schedule_cases.json.
 
 export const CATCHUP_HOURS = 6;
-export const LIMITS = { topics: 10, queries: 8, times: 6, recipients: 5 };
+export const LIMITS = { topics: 10, queries: 8, times: 6, recipients: 5, rules: 10, keywords: 8, areas: 5 };
+export const RULE_ACTIONS = ["notify", "boost", "mute"];
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const EMAIL_RE = /^[^@\s,;<>"']+@[^@\s,;<>"']+\.[^@\s,;<>"']+$/;
 
@@ -12,6 +13,9 @@ export const DEFAULT_SETTINGS = {
   schedule: { times: ["08:00"], days: [0, 1, 2, 3, 4, 5, 6], timezone: "Asia/Kolkata" },
   email: { to: "", send_when_empty: false },
   weekly: { enabled: false, day: 6 },
+  notify: { digest: false, alerts: true, ideas: true, min_score: 9 },
+  radar: { enabled: true, areas: ["AI and software engineering", "Remote and freelance work", "Startups and market trends"] },
+  rules: [],
   min_score: 6,
   topics: [],
 };
@@ -117,6 +121,30 @@ export function validateSettings(raw) {
   const wd = raw.weekly?.day ?? 6;
   if (!Number.isInteger(wd) || wd < 0 || wd > 6) return { error: "The weekly roundup day is not valid." };
   out.weekly = { enabled: raw.weekly?.enabled === true, day: wd };
+
+  const nt = raw.notify ?? {};
+  const flag = (v, dflt) => (v === undefined ? dflt : v === true);
+  const nms = nt.min_score ?? 9;
+  if (!Number.isInteger(nms) || nms < 1 || nms > 10) return { error: "The notification score must be between 1 and 10." };
+  out.notify = { digest: flag(nt.digest, false), alerts: flag(nt.alerts, true), ideas: flag(nt.ideas, true), min_score: nms };
+
+  const rd = raw.radar ?? {};
+  const areas = rd.areas === undefined ? DEFAULT_SETTINGS.radar.areas : rd.areas;
+  if (!Array.isArray(areas)) return { error: "Radar areas must be a list." };
+  const cleanAreas = [...new Set(areas.map((a) => clean(a, 80)).filter(Boolean))];
+  if (cleanAreas.length > LIMITS.areas) return { error: `Use at most ${LIMITS.areas} radar areas.` };
+  out.radar = { enabled: flag(rd.enabled, true), areas: cleanAreas };
+
+  const rawRules = raw.rules ?? [];
+  if (!Array.isArray(rawRules)) return { error: "Rules must be a list." };
+  if (rawRules.length > LIMITS.rules) return { error: `Use at most ${LIMITS.rules} rules.` };
+  for (const [i, r] of rawRules.entries()) {
+    if (!RULE_ACTIONS.includes(r?.action)) return { error: `Rule ${i + 1} needs an action.` };
+    const match = [...new Set((Array.isArray(r.match) ? r.match : []).map((k) => clean(k, 60)).filter(Boolean))];
+    if (!match.length) return { error: `Rule ${i + 1} needs at least one word to look for.` };
+    if (match.length > LIMITS.keywords) return { error: `Rule ${i + 1} has more than ${LIMITS.keywords} words.` };
+    out.rules.push({ name: clean(r.name, 60) || `Rule ${i + 1}`, topic: clean(r.topic, 80), match, action: r.action });
+  }
 
   const ms = raw.min_score;
   if (!Number.isInteger(ms) || ms < 1 || ms > 10) return { error: "Strictness must be between 1 and 10." };

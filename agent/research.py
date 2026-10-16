@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from . import search as search_mod
 from .fetch import fetch_text
 from .llm import LLMClient, LLMError
+from .rules import apply_rules
 from .search import Result
 from .store import SeenStore, normalize_url
 
@@ -38,6 +39,8 @@ class Item:
     summary: str
     why: str
     score: float | None  # None = LLM unavailable, shown unranked
+    notify: bool = False  # a 'notify' rule matched
+    rule: str = ''
 
     @property
     def domain(self) -> str:
@@ -186,7 +189,8 @@ def run_topic(
             result.to_mark.extend((c.url, c.title) for c in batch)
         queries = list(dict.fromkeys(follow))[:3]
 
-    keep = sorted((i for i in scored if i.score is not None and i.score >= min_score), key=lambda i: -i.score)
+    scored = apply_rules(topic["name"], scored, cfg.get("rules") or [])
+    keep = sorted((i for i in scored if i.score is not None and (i.score >= min_score or i.notify)), key=lambda i: -i.score)
     result.items = keep[: int(rc["max_items_per_topic"])]
 
     if not scored and unscored:

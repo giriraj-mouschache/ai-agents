@@ -60,3 +60,19 @@ test("validate handles several recipients, weekly roundup and empty-day option",
   assert.match(validateSettings({ ...s, email: { to: "1@x.co 2@x.co 3@x.co 4@x.co 5@x.co 6@x.co" } }).error, /at most 5/);
   assert.match(validateSettings({ ...s, weekly: { enabled: true, day: 9 } }).error, /weekly/);
 });
+
+test("validate handles rules, notifications and radar", () => {
+  const base = { paused: false, schedule: { times: ["08:00"], days: [0], timezone: "UTC" }, min_score: 6, email: { to: "" },
+    topics: [{ name: "T", queries: ["q"] }] };
+  const ok = validateSettings({ ...base, notify: { digest: true, min_score: 8 },
+    radar: { enabled: false, areas: ["AI", " ai ", "Health"] },
+    rules: [{ name: "", topic: "T", match: [" gpt ", "gpt", ""], action: "boost" }] });
+  assert.deepEqual(ok.settings.notify, { digest: true, alerts: true, ideas: true, min_score: 8 });
+  assert.deepEqual(ok.settings.radar, { enabled: false, areas: ["AI", "ai", "Health"] });
+  assert.deepEqual(ok.settings.rules, [{ name: "Rule 1", topic: "T", match: ["gpt"], action: "boost" }]);
+  assert.match(validateSettings({ ...base, rules: [{ match: ["x"], action: "explode" }] }).error, /action/);
+  assert.match(validateSettings({ ...base, rules: [{ match: [" "], action: "mute" }] }).error, /word/);
+  assert.match(validateSettings({ ...base, notify: { min_score: 0 } }).error, /notification score/);
+  assert.match(validateSettings({ ...base, radar: { areas: ["a", "b", "c", "d", "e", "f"] } }).error, /at most 5/);
+  assert.equal(validateSettings(base).settings.notify.alerts, true);
+});
