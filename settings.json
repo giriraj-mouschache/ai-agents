@@ -17,10 +17,21 @@
   "timezone": "Asia/Kolkata"
  },
  "email": {
-  "to": ""
+  "to": "llakshitmathur239@gmail.com"
  },
  "min_score": 6,
  "topics": [
+  {
+   "name": "New AI advancements",
+   "goal": "Significant recent AI developments: new model releases, research breakthroughs, notable products and tools, and important safety or policy news. Skip hype, funding gossip and generic listicles.",
+   "queries": [
+    "new AI model release this week",
+    "AI research breakthrough announced",
+    "latest AI advancements news",
+    "new open source AI model released"
+   ],
+   "timelimit": "w"
+  },
   {
    "name": "AI and LLM engineering",
    "goal": "New releases, techniques and tools for building LLM applications and agents that a working software engineer could use. Skip hype, funding news and generic listicles.",
