@@ -1,0 +1,6 @@
+{
+  "name": "ai-agents-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test netlify/tests/shared.test.mjs netlify/tests/api.test.mjs" }
+}

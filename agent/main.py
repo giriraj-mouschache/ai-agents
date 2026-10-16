@@ -14,6 +14,7 @@ from .emailer import Digest, make_subject, render_html, render_text, send_email
 from .history import IST, record_run
 from .llm import LLMClient
 from .research import Item, TopicResult, make_tldr, run_topic
+from .settings import apply_settings, load_settings
 from .store import SeenStore
 
 log = logging.getLogger("agent")
@@ -76,6 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Scheduled web-research agent")
     parser.add_argument("--config", default="config.yaml")
     parser.add_argument("--topic", action="append", help="Only run topics with this name (repeatable)")
+    parser.add_argument("--data-dir", help="Folder holding settings.json, state/ and site/ (the 'data' branch checkout)")
     parser.add_argument("--dry-run", action="store_true", help="Write out/digest.html instead of emailing; state is not saved")
     parser.add_argument("--test-email", action="store_true", help="Send a sample demo email (with an LLM health check) and exit")
     parser.add_argument("--to", help="Recipient for --test-email (defaults to MAIL_TO or GMAIL_USER)")
@@ -88,9 +90,31 @@ def main(argv: list[str] | None = None) -> int:
         return _send_demo(args)
 
     cfg = load_config(args.config)
+    mail_env = dict(os.environ)
+    if args.data_dir:
+        data = Path(args.data_dir)
+        settings = load_settings(data / "settings.json")
+        apply_settings(cfg, settings)
+        cfg["state"]["path"] = str(data / "state" / "seen.json")
+        cfg["site"]["data_dir"] = str(data / "site")
+        if settings["email"]["to"]:
+            mail_env["MAIL_TO"] = settings["email"]["to"]
+    kind = os.environ.get("GITHUB_EVENT_NAME", "local")
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+
+    def record_failure(error: str) -> None:
+        if args.dry_run:
+            return
+        try:
+            record_run(cfg["site"]["data_dir"], cfg, Digest(date=datetime.now(IST).strftime("%Y-%m-%d")),
+                       status="failed", emailed=False, llm_name=None, kind=kind, repo=repo, error=error)
+        except OSError:
+            log.exception("Could not write dashboard data")
+
     llm = LLMClient(cfg)
     if not llm.available:
         log.error("No LLM key found. Set at least one of GEMINI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY.")
+        record_failure("NoLLMKey")
         return 2
 
     topics = cfg["topics"]
@@ -129,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     send_error: Exception | None = None
     if digest.item_count or errors or cfg["email"]["send_when_empty"]:
         try:
-            send_email(make_subject(cfg["email"]["subject_prefix"], digest), render_html(digest), render_text(digest))
+            send_email(make_subject(cfg["email"]["subject_prefix"], digest), render_html(digest), render_text(digest), env=mail_env)
             emailed = True
             log.info("Digest emailed (%d items)", digest.item_count)
         except Exception as exc:
@@ -148,8 +172,8 @@ def main(argv: list[str] | None = None) -> int:
             status=status,
             emailed=emailed,
             llm_name=llm.last_backend,
-            kind=os.environ.get("GITHUB_EVENT_NAME", "local"),
-            repo=os.environ.get("GITHUB_REPOSITORY", ""),
+            kind=kind,
+            repo=repo,
             error=type(send_error).__name__ if send_error else "",
         )
     except OSError:

@@ -1,11 +1,18 @@
 name: research-agent
 
+# Who starts this workflow:
+#   - the dashboard's "Run now" button and its 15-minute timer (Netlify), via workflow_dispatch
+#   - an hourly GitHub cron as a backup
+# agent/gate.py decides whether a run is really due, so extra triggers cost a few seconds and send nothing.
 on:
   schedule:
-    # GitHub cron is UTC. 02:30 UTC = 08:00 IST, every day.
-    - cron: "30 2 * * *"
+    - cron: "7 * * * *"
   workflow_dispatch:
     inputs:
+      force:
+        description: "Run now even if nothing is due"
+        type: boolean
+        default: false
       dry_run:
         description: "Dry run (build the digest as an artifact, do not email or save state)"
         type: boolean
@@ -16,7 +23,7 @@ on:
         default: ""
 
 permissions:
-  contents: write # lets the job commit state/seen.json back to the repo
+  contents: write # lets the job commit run history to the data branch
 
 concurrency:
   group: research-agent
@@ -29,27 +36,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check out data branch
+        uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
+
+      - name: Is a run due?
+        id: gate
+        env:
+          INPUT_FORCE: ${{ github.event.inputs.force }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          INPUT_TEST_EMAIL_TO: ${{ github.event.inputs.test_email_to }}
+        run: python -m agent.gate --data data
 
       - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
         run: pip install -r requirements.txt
 
       - name: Send demo email
-        if: ${{ inputs.test_email_to != '' }}
+        if: steps.gate.outputs.run == 'true' && github.event.inputs.test_email_to != ''
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          TEST_EMAIL_TO: ${{ inputs.test_email_to }}
+          TEST_EMAIL_TO: ${{ github.event.inputs.test_email_to }}
         run: python -m agent.main --test-email --to "$TEST_EMAIL_TO"
 
       - name: Run agent
-        if: ${{ inputs.test_email_to == '' }}
+        if: steps.gate.outputs.run == 'true' && github.event.inputs.test_email_to == ''
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
@@ -58,26 +79,33 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-        run: python -m agent.main ${{ inputs.dry_run && '--dry-run' || '' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python -m agent.main --data-dir data --dry-run
+          else
+            python -m agent.main --data-dir data
+          fi
 
       - name: Upload dry-run digest
-        if: ${{ inputs.dry_run }}
+        if: steps.gate.outputs.run == 'true' && github.event.inputs.dry_run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: digest
           path: out/
 
-      - name: Commit state
+      - name: Save run history
         # Also runs after a failed agent step, so a failed run still shows up on the dashboard.
-        if: ${{ !cancelled() && !inputs.dry_run && inputs.test_email_to == '' }}
+        if: ${{ !cancelled() && steps.gate.outputs.run == 'true' && github.event.inputs.dry_run != 'true' && github.event.inputs.test_email_to == '' }}
+        working-directory: data
         run: |
           git config user.name "research-agent[bot]"
           git config user.email "research-agent@users.noreply.github.com"
-          git add state/seen.json site/data
+          git add -A state site
           if git diff --cached --quiet; then
-            echo "No state changes"
+            echo "No changes to save"
           else
-            git commit -m "chore: update digest data and seen state"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git commit -m "run: update history and seen state"
+            git pull --rebase origin data
+            git push origin HEAD:data
           fi

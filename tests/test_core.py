@@ -201,3 +201,61 @@ def test_record_run_writes_digest_and_prunes(tmp_path):
 )
 def test_fetch_blocks_non_public_urls(url):
     assert not is_public_http_url(url)
+
+
+# ---- settings, schedule, gate ----
+
+def test_settings_normalize_repairs_bad_input():
+    from agent.settings import normalize
+
+    s = normalize({
+        "paused": "yes",
+        "schedule": {"times": ["8:00", "09:30", "09:30", "25:00"], "days": [1, 9, "x", True], "timezone": "Mars/Base"},
+        "email": {"to": "not an email"},
+        "min_score": 99,
+        "topics": [{"name": "  A  ", "queries": [" q1 ", ""], "goal": ""}, {"name": "no queries", "queries": []}, "junk"],
+    })
+    assert s["paused"] is False
+    assert s["schedule"] == {"times": ["09:30"], "days": [1], "timezone": "Asia/Kolkata"}
+    assert s["email"]["to"] == "" and s["min_score"] == 6
+    assert s["topics"] == [{"name": "A", "queries": ["q1"], "goal": "A"}]
+
+
+def test_apply_settings_overrides_config():
+    from agent.settings import apply_settings, normalize
+
+    cfg = _merge(DEFAULTS, {"topics": [{"name": "old", "queries": ["x"]}]})
+    s = normalize({"min_score": 8, "topics": [{"name": "New", "queries": ["y"], "timelimit": "m"}],
+                   "schedule": {"times": ["07:15"], "days": [0, 1, 2, 3, 4], "timezone": "Asia/Kolkata"}})
+    apply_settings(cfg, s)
+    assert cfg["topics"][0]["name"] == "New" and cfg["topics"][0]["timelimit"] == "m"
+    assert cfg["research"]["min_score"] == 8
+    assert cfg["site"]["schedule_label"] == "Weekdays at 07:15 (Asia/Kolkata)"
+
+
+def test_schedule_matches_shared_cases():
+    from agent.schedule import due_slot, parse_ts
+
+    cases = json.load(open("tests/schedule_cases.json"))
+    for c in cases:
+        got = due_slot(parse_ts(c["now"]), c["settings"], parse_ts(c["last_run"]))
+        got = got.strftime("%Y-%m-%dT%H:%M:%SZ") if got else None
+        assert got == c["expected_slot"], c["name"]
+
+
+def test_gate_decisions(tmp_path):
+    from datetime import datetime, timezone
+
+    from agent.gate import decide
+
+    (tmp_path / "site").mkdir()
+    (tmp_path / "settings.json").write_text(json.dumps({"schedule": {"times": ["08:00"], "days": [0, 1, 2, 3, 4, 5, 6], "timezone": "Asia/Kolkata"}}))
+    now = datetime(2026, 10, 16, 2, 45, tzinfo=timezone.utc)
+    assert decide("schedule", False, False, False, tmp_path, now)[0] is True
+    assert decide("workflow_dispatch", True, False, False, tmp_path, datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc))[0] is True
+    assert decide("schedule", False, False, False, tmp_path, datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc))[0] is False
+    (tmp_path / "site" / "index.json").write_text(json.dumps({"runs": [{"ran_at": "2026-10-16T02:40:00+00:00"}]}))
+    assert decide("schedule", False, False, False, tmp_path, now)[0] is False
+    (tmp_path / "settings.json").write_text(json.dumps({"paused": True}))
+    assert decide("schedule", False, False, False, tmp_path, now)[0] is False
+    assert decide("workflow_dispatch", True, False, False, tmp_path, now)[0] is True  # "Run now" works while paused

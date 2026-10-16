@@ -1,6 +1,10 @@
-# Static site: no build step. Netlify publishes the "site" folder as-is.
+# Static page plus two functions (netlify/functions): api (settings, run now) and tick (15-minute scheduler).
+# No build step. Run history and settings live on the "data" branch, so saving them never redeploys the site.
 [build]
   publish = "site"
+
+[functions]
+  directory = "netlify/functions"
 
 [[headers]]
   for = "/*"
@@ -10,8 +14,3 @@
     Referrer-Policy = "no-referrer"
     X-Robots-Tag = "noindex"
 
-# Data changes every run, so always revalidate it.
-[[headers]]
-  for = "/data/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"

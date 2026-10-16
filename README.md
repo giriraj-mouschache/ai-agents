@@ -7,7 +7,7 @@ through Gmail SMTP. It remembers what it already sent, so you never get the same
 ```
 cron (GitHub Actions) -> search (Tavily or DuckDuckGo) -> fetch pages (trafilatura)
    -> LLM scores + summarizes (Gemini / Groq / OpenRouter, free tiers) -> follow-up round
-   -> HTML digest -> Gmail SMTP -> you     (state/seen.json commits back to the repo)
+   -> HTML digest -> Gmail SMTP -> you     (history and seen links save to the data branch)
 ```
 
 ## Setup (about 10 minutes)
@@ -29,7 +29,7 @@ cron (GitHub Actions) -> search (Tavily or DuckDuckGo) -> fetch pages (trafilatu
    | `GEMINI_API_KEY` / `GROQ_API_KEY` / `OPENROUTER_API_KEY` | at least one | free-tier LLM keys |
    | `TAVILY_API_KEY` | no | cleaner search results than DuckDuckGo (free tier available) |
 
-5. **Edit `config.yaml`**: replace the starter topics with what you want tracked.
+5. **Topics**: set them on the dashboard (or seed them in `data` branch `settings.json`).
 6. **Test it**: *Actions -> research-agent -> Run workflow*. Tick **dry_run** first to download a sample digest
    without emailing anything; run it again unticked to get the real email.
 
@@ -39,46 +39,33 @@ cron (GitHub Actions) -> search (Tavily or DuckDuckGo) -> fetch pages (trafilatu
 Never put the Gmail password or API keys in `config.yaml`, in code, or in chat. Secrets belong only in GitHub Secrets
 (or a local `.env`, which is git-ignored).
 
-## Dashboard
+## Dashboard (manage everything from the page)
 
-`site/` is a small static dashboard: a 30-day strip showing whether each run happened, the latest digest with scores,
-the run history, and the topics being tracked. Every real run (including failed ones) writes its results to
-`site/data/` and commits them, so the page keeps itself up to date.
+The Netlify site is both the viewer and the control panel. From it you can change topics, search phrases, days and
+times, the recipient and how picky the AI is; pause or resume; press **Run now**; and send a test email.
 
-Host it on Netlify. There is no build step, and `netlify.toml` already points at the `site` folder:
+How it fits together:
 
-1. In Netlify choose *Add new project -> Import an existing project -> GitHub* and pick this repo.
-2. Leave the build command empty. The publish directory comes from `netlify.toml`.
-3. From then on, each data commit redeploys the page.
+```
+browser  ->  Netlify function /api  ->  GitHub (data branch: settings.json, history)  ->  workflow runs the agent
+Netlify timer (every 15 min) -> starts the workflow only when a run is due
+GitHub cron (hourly)        -> backup trigger; agent/gate.py makes sure nothing runs twice
+```
 
-Preview it locally with `cd site && python3 -m http.server`, then open <http://localhost:8000>.
+Settings, run history and the seen-links list live on the **`data`** branch, so saving them never redeploys the site.
+`config.yaml` only supplies defaults (LLM, search limits); topics, schedule, recipient and strictness come from the page.
 
-Anyone with the site link can read the digests, so treat the URL as public. If Netlify shows "Pending approval" on the
-bot's commits (this can happen with private repos), approve it once, or trigger deploys with a Netlify build hook.
+**One-time setup** (the page walks you through it): create a fine-grained GitHub token for this repo with Contents and
+Actions set to Read and write, then add `GITHUB_TOKEN` and `ADMIN_KEY` (your own password, 12+ characters) as Netlify
+environment variables and redeploy. Optional: `GITHUB_REPO` if you fork the repo. Keep the token only in Netlify, never
+in the repo or the browser.
+
+Tests: `node --test netlify/tests/shared.test.mjs netlify/tests/api.test.mjs` and `pytest`.
 
 ## Schedule
 
-The cron line in `.github/workflows/research-agent.yml` is in UTC. The default `30 2 * * *` is 08:00 IST daily.
-Examples: every 3 hours `0 */3 * * *`, weekdays 09:00 IST `30 3 * * 1-5`. GitHub can delay scheduled runs by several
-minutes at busy times, and it is not a real-time listener.
-
-## Configure topics
-
-```yaml
-topics:
-  - name: AI and LLM engineering
-    goal: What counts as relevant, in plain words. The LLM uses this to score results.
-    timelimit: w            # optional per-topic override: d, w, m, y
-    mode: text              # optional: "news" uses DuckDuckGo/Tavily news search
-    min_score: 7            # optional per-topic override
-    queries:
-      - search phrase one
-      - search phrase two
-```
-
-How a run works per topic: your queries are searched, new pages are read, the LLM scores each 0-10 against your
-`goal`, and it may propose up to three follow-up queries for a second round (`research.max_rounds`). Only items at
-or above `min_score` are emailed.
+Set it on the page. The Netlify timer checks every 15 minutes, so a run starts within about 15 minutes of the chosen
+time. A missed slot is still run for up to 6 hours. If Netlify's timer is ever down, the hourly GitHub cron picks it up.
 
 ## Run locally
 
@@ -107,4 +94,4 @@ Flags: `--topic "AI and LLM engineering"` runs one topic, `--config other.yaml` 
 - **Prompt-injection safety.** Web pages are treated as untrusted data. The agent has no tools that act on your behalf
   (it cannot send email to anyone but you, run code, or visit private addresses), and links in the digest come from the
   search results, never from model output.
-- **State.** `state/seen.json` holds hashed URLs and titles from the last 90 days. Delete its contents to reset.
+- **State.** `state/seen.json` on the data branch holds hashed URLs and titles from the last 90 days. Delete its contents to reset.
