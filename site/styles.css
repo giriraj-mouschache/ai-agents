@@ -22,7 +22,7 @@
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-bottom: 96px; }
 body { margin: 0; background: var(--ground); color: var(--ink); font: 400 1rem/1.5 var(--ui); }
 a { color: var(--accent); text-underline-offset: 0.18em; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
@@ -191,3 +191,32 @@ code { padding: 0.08em 0.4em; border-radius: 4px; background: var(--tint); font-
 .rule-line input[type="text"] { flex: 1 1 14rem; }
 .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--tint); font-size: 0.8125rem; font-weight: 600; }
 @media (max-width: 520px) { .tabs { overflow-x: auto; } .tabs button { padding-inline: 12px; white-space: nowrap; } }
+
+/* Consistency pass: brand mark, one card rhythm, collapsible settings, safe areas */
+h1 { display: flex; align-items: center; gap: 0.5rem; }
+.mark { flex: none; width: 0.85em; height: 0.85em; fill: var(--accent); }
+.topic-card { min-width: 0; margin: 0 0 14px; }
+.topic-card legend { padding: 0 6px; }
+.card, .fold { margin-top: 16px; }
+.card + .card, .fold + .fold, .fold + .card, .card + .fold { margin-top: 12px; }
+.fold { padding: 0; overflow: clip; }
+.fold > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; padding: 16px clamp(16px, 3vw, 28px); padding-inline-end: 48px; position: relative; cursor: pointer; list-style: none; min-height: 56px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: ""; position: absolute; inset-inline-end: clamp(18px, 3vw, 28px); inset-block-start: 50%; width: 9px; height: 9px; margin-top: -7px; border-inline-end: 2px solid var(--ink-2); border-block-end: 2px solid var(--ink-2); transform: rotate(45deg); transition: transform 0.15s; }
+.fold[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.fold > summary:hover { background: var(--tint); }
+.fold .ttl { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; }
+.fold .sum { color: var(--ink-2); font-size: 0.9rem; }
+.fold .panel { padding: 0 clamp(16px, 3vw, 28px) 22px; border-top: 1px solid var(--rule); }
+.fold .panel > .hint { margin: 16px 0 0; color: var(--ink-2); max-width: 62ch; }
+.rule-line select { max-width: 100%; }
+.savebar { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+@media (prefers-reduced-motion: reduce) { .fold > summary::after { transition: none; } }
+@media (max-width: 639px) {
+  .fold > summary { padding-inline: 16px; padding-inline-end: 44px; }
+  .fold > summary::after { inset-inline-end: 18px; }
+  .fold .panel { padding-inline: 16px; }
+  .fold .sum { flex-basis: 100%; }
+  .card { padding: 18px 16px; }
+  .rule-line select, .rule-line input[type="text"] { flex: 1 1 100%; width: 100%; }
+}

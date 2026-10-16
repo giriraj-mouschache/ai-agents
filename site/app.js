@@ -8,7 +8,7 @@ const RUN_ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 const S = {
   status: null, key: "", settings: null, saved: null, sha: null, nextRun: null, settingsNote: "",
-  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false, check: null, ideas: null,
+  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false, check: null, ideas: null, open: new Set(),
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -408,11 +408,14 @@ function radarCard(touch) {
       h("div", { class: "field", style: "margin-top:12px" }, h("label", { for: "radar-areas" }, "Areas to watch", h("span", { class: "help", text: "One per line, up to 5. Broad is fine, like \"Healthcare technology\"." })), areas)));
 }
 
+let refreshSummaries = () => {};
+const parseRecipients = (v) => { const n = String(v || "").split(/[,;\s]+/).filter(Boolean).length; return n ? `${n} address${n === 1 ? "" : "es"}` : ""; };
+
 function settingsView() {
   const s = S.settings;
   s.rules ||= []; s.notify ||= { digest: false, alerts: true, ideas: true, min_score: 9 }; s.radar ||= { enabled: true, areas: [] };
   const root = h("div", {});
-  const touch = () => { updateSavebar(); };
+  const touch = () => { updateSavebar(); refreshSummaries(); };
   const rerender = (focusSel) => { const y = scrollY; main.replaceChildren(settingsView()); scrollTo(0, y); if (focusSel) document.querySelector(focusSel)?.focus(); renderHeader(); };
 
   // When
@@ -437,7 +440,7 @@ function settingsView() {
   // Topics
   const topicsBox = h("div", {});
   const drawTopics = () => {
-    topicsBox.replaceChildren(...s.topics.map((t, i) => h("fieldset", { class: "topic-card", style: "border:1px solid var(--rule);margin:0 0 14px;min-width:0" },
+    topicsBox.replaceChildren(...s.topics.map((t, i) => h("fieldset", { class: "topic-card" },
       h("legend", { class: "label", text: `Topic ${i + 1}` }),
       h("div", { class: "topic-head" },
         h("div", {}, h("label", { for: `tn${i}`, text: "Name" }), h("input", { type: "text", id: `tn${i}`, value: t.name, maxlength: 80, oninput: (e) => { t.name = e.target.value; touch(); } })),
@@ -484,6 +487,31 @@ function settingsView() {
   const bar = h("div", { class: "savebar" }, h("span", { class: "msg", id: "savemsg", role: "status" }),
     h("button", { type: "button", class: "btn", id: "btn-discard", onclick: () => { S.settings = clone(S.saved); S.forceDirty = false; rerender(); } }, "Discard changes"),
     h("button", { type: "button", class: "btn primary", id: "btn-save", onclick: save }, "Save changes"));
+  // Fold each card into a titled, collapsible section with a one-line summary of its current value.
+  const cards = [...root.querySelectorAll(":scope > section.card")];
+  const sums = [
+    () => (s.schedule.days.length && s.schedule.times.length ? scheduleSentence(s.schedule).replace(/^Every day/, "Daily") : "Not scheduled"),
+    () => `${s.topics.length} topic${s.topics.length === 1 ? "" : "s"}`,
+    () => { const n = parseRecipients(s.email.to); return `${n || "Default address"}${s.weekly.enabled ? ", weekly roundup" : ""}`; },
+    () => `Minimum relevance ${s.min_score} of 10`,
+    () => `${s.rules.length} rule${s.rules.length === 1 ? "" : "s"}`,
+    () => `Alerts at ${s.notify.min_score}+ of 10`,
+    () => (s.radar.enabled ? `On, ${s.radar.areas.length} area${s.radar.areas.length === 1 ? "" : "s"}` : "Off"),
+    () => "",
+  ];
+  const sumEls = [];
+  cards.forEach((c, i) => {
+    const title = c.querySelector(":scope > h2").textContent;
+    const sum = h("span", { class: "sum" });
+    sumEls.push([sum, sums[i]]);
+    const d = h("details", { class: "card fold", id: c.id || undefined });
+    d.open = S.open.has(title);
+    d.addEventListener("toggle", () => { d.open ? S.open.add(title) : S.open.delete(title); });
+    d.append(h("summary", {}, h("span", { class: "ttl", text: title }), sum), h("div", { class: "panel" }, ...[...c.children].slice(1)));
+    c.replaceWith(d);
+  });
+  refreshSummaries = () => sumEls.forEach(([el, fn]) => { el.textContent = fn(); });
+  refreshSummaries();
   root.append(bar);
   queueMicrotask(updateSavebar);
   return root;
