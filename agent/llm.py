@@ -77,6 +77,7 @@ class LLMClient:
         self.min_interval = float(llm_cfg["min_interval_seconds"])
         self.timeout = float(llm_cfg["timeout_seconds"])
         self._last_call = 0.0
+        self.failures: list[str] = []  # short provider errors, shown in the digest when the AI step fails
         self.last_backend: str | None = None  # name of the provider that answered most recently
         self.backends: list[Backend] = []
         for name in llm_cfg["providers"]:
@@ -116,6 +117,7 @@ class LLMClient:
                 return text
             except LLMError as exc:
                 log.warning("LLM backend %s failed: %s", backend.name, exc)
+                self.failures.append(f"{backend.name}: {str(exc)[:160]}")
                 last = exc
         raise LLMError(f"All LLM backends failed: {last}")
 

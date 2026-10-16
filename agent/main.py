@@ -137,6 +137,9 @@ def main(argv: list[str] | None = None) -> int:
             log.exception("Topic '%s' failed", topic["name"])
             errors.append(f"{topic['name']}: {type(exc).__name__}: {str(exc)[:200]}")
 
+    if any(r.llm_failed for r in results):
+        why = "; ".join(dict.fromkeys(llm.failures))[:400] or "no details"
+        errors.append(f"The AI step failed, so these results are unranked and unsummarised ({why}). Check the AI keys in GitHub secrets.")
     digest = Digest(date=today, sections=results, errors=errors)
     if cfg["email"]["tldr"] and digest.item_count:
         digest.tldr = make_tldr(llm, results, today)

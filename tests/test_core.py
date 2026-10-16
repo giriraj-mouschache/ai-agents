@@ -120,6 +120,7 @@ def test_run_topic_falls_back_to_unranked_when_llm_down(tmp_path):
         fetch_fn=fake_fetch,
     )
     assert len(res.items) == 1 and res.items[0].score is None
+    assert res.llm_failed and res.to_mark == []  # retried later, not remembered as sent
 
 
 def test_render_html_escapes_and_blocks_bad_links():

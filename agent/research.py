@@ -49,6 +49,7 @@ class TopicResult:
     name: str
     items: list[Item] = field(default_factory=list)
     analyzed: int = 0
+    llm_failed: bool = False  # True when the AI could not score this topic and raw links were used
     to_mark: list[tuple[str, str]] = field(default_factory=list)  # (url, title) to remember as seen
 
 
@@ -190,7 +191,7 @@ def run_topic(
             Item(result.name, c.title, c.url, (c.snippet or c.text)[:300], "", None)
             for c in unscored[: int(rc["max_items_per_topic"])]
         ]
-        result.to_mark.extend((c.url, c.title) for c in unscored)
+        result.llm_failed = True  # not marked as seen, so a later run with a working AI can rank them
     return result
 
 
