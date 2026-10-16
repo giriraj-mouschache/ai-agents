@@ -60,6 +60,8 @@ Actions set to Read and write, then add `GITHUB_TOKEN` and `ADMIN_KEY` (your own
 environment variables and redeploy. Optional: `GITHUB_REPO` if you fork the repo. Keep the token only in Netlify, never
 in the repo or the browser.
 
+New to this? Read [GUIDE.md](GUIDE.md) for the everyday steps. The dashboard's **Health** tab runs a setup check (Gmail, AI keys, search).
+
 Tests: `node --test netlify/tests/shared.test.mjs netlify/tests/api.test.mjs` and `pytest`.
 
 ## Schedule

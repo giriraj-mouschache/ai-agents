@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import load_config
@@ -14,6 +14,7 @@ from .emailer import Digest, make_subject, render_html, render_text, send_email
 from .history import IST, record_run
 from .llm import LLMClient
 from .research import Item, TopicResult, make_tldr, run_topic
+from . import weekly
 from .settings import apply_settings, load_settings
 from .store import SeenStore
 
@@ -91,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = load_config(args.config)
     mail_env = dict(os.environ)
+    settings = None
     if args.data_dir:
         data = Path(args.data_dir)
         settings = load_settings(data / "settings.json")
@@ -191,7 +193,25 @@ def main(argv: list[str] | None = None) -> int:
             store.add(url, title)
     store.save()
 
+    if args.data_dir and not errors and weekly.due_today(settings, Path(args.data_dir), datetime.now(timezone.utc)):
+        _send_weekly(settings, Path(args.data_dir), mail_env)
+
     return 1 if errors and not results else 0
+
+
+def _send_weekly(settings: dict, data: Path, env: dict) -> None:
+    """Best effort: a failed weekly roundup must never fail the daily run."""
+    now = datetime.now(timezone.utc)
+    try:
+        digest = weekly.build(data, now)
+        if digest is None:
+            log.info("Weekly roundup: nothing to include yet")
+            return
+        send_email(f"Weekly roundup - {digest.date} - {digest.item_count} top items", render_html(digest), render_text(digest), env=env)
+        weekly.mark_sent(settings, data, now)
+        log.info("Weekly roundup emailed (%d items)", digest.item_count)
+    except Exception as exc:
+        log.warning("Weekly roundup failed: %s", type(exc).__name__)
 
 
 if __name__ == "__main__":

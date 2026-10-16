@@ -3,7 +3,7 @@ import { cfg, dispatch, getFile, GitHubError, listRuns, putFile } from "../lib/g
 import { DEFAULT_SETTINGS, nextSlot, validateSettings } from "../lib/shared.mjs";
 
 const EMAIL_RE = /^[^@\s,;<>"']+@[^@\s,;<>"']+\.[^@\s,;<>"']+$/;
-const DATA_FILE_RE = /^(index|digests\/[A-Za-z0-9_-]{1,40})$/;
+const DATA_FILE_RE = /^(index|check|digests\/[A-Za-z0-9_-]{1,40})$/;
 const MIN_KEY_LENGTH = 12;
 
 const json = (data, status = 200) =>
@@ -82,13 +82,18 @@ export default async (req, context) => {
       const file = url.searchParams.get("file") || "";
       if (!DATA_FILE_RE.test(file)) return fail(400, "Unknown file.");
       const f = await getFile(`site/${file}.json`);
-      if (!f) return file === "index" ? json({ runs: [] }) : fail(404, "That digest no longer exists.");
+      if (!f) return file === "index" ? json({ runs: [] }) : file === "check" ? json({ checks: [] }) : fail(404, "That digest no longer exists.");
       return new Response(f.text, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
     }
 
     if (route === "run" && req.method === "POST") {
       const body = await req.json().catch(() => ({}));
       await dispatch({ force: "true", dry_run: body?.dry_run === true ? "true" : "false" });
+      return json({ started: true });
+    }
+
+    if (route === "check" && req.method === "POST") {
+      await dispatch({ check: "true" });
       return json({ started: true });
     }
 

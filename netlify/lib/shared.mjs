@@ -2,7 +2,7 @@
 // both sides are checked against tests/schedule_cases.json.
 
 export const CATCHUP_HOURS = 6;
-export const LIMITS = { topics: 10, queries: 8, times: 6 };
+export const LIMITS = { topics: 10, queries: 8, times: 6, recipients: 5 };
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const EMAIL_RE = /^[^@\s,;<>"']+@[^@\s,;<>"']+\.[^@\s,;<>"']+$/;
 
@@ -10,7 +10,8 @@ export const DEFAULT_SETTINGS = {
   version: 1,
   paused: false,
   schedule: { times: ["08:00"], days: [0, 1, 2, 3, 4, 5, 6], timezone: "Asia/Kolkata" },
-  email: { to: "" },
+  email: { to: "", send_when_empty: false },
+  weekly: { enabled: false, day: 6 },
   min_score: 6,
   topics: [],
 };
@@ -106,9 +107,16 @@ export function validateSettings(raw) {
   if (!tzValid(s.timezone)) return { error: "That time zone is not recognised." };
   out.schedule = { times, days, timezone: s.timezone };
 
-  const to = clean(raw.email?.to, 200);
-  if (to && !EMAIL_RE.test(to)) return { error: "The email address does not look right." };
-  out.email = { to };
+  const parts = clean(raw.email?.to, 400).split(/[,;\s]+/).filter(Boolean);
+  if (parts.some((p) => !EMAIL_RE.test(p))) return { error: "One of the email addresses does not look right." };
+  const seenMail = new Set();
+  const to = parts.filter((p) => !seenMail.has(p.toLowerCase()) && seenMail.add(p.toLowerCase()));
+  if (to.length > LIMITS.recipients) return { error: `Use at most ${LIMITS.recipients} email addresses.` };
+  out.email = { to: to.join(", "), send_when_empty: raw.email?.send_when_empty === true };
+
+  const wd = raw.weekly?.day ?? 6;
+  if (!Number.isInteger(wd) || wd < 0 || wd > 6) return { error: "The weekly roundup day is not valid." };
+  out.weekly = { enabled: raw.weekly?.enabled === true, day: wd };
 
   const ms = raw.min_score;
   if (!Number.isInteger(ms) || ms < 1 || ms > 10) return { error: "Strictness must be between 1 and 10." };

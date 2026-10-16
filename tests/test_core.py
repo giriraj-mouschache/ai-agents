@@ -294,7 +294,59 @@ def test_llm_switches_model_after_404(monkeypatch):
 
     monkeypatch.setattr(llm_mod.requests, "post", fake_post)
     monkeypatch.setattr(llm_mod.requests, "get", lambda url, headers=None, timeout=None: Resp(200, {"data": [{"id": "models/gemini-3.8-flash"}]}))
-    cfg = _merge(DEFAULTS, {"llm": {"providers": ["gemini"], "min_interval_seconds": 0}})
+    cfg = _merge(DEFAULTS, {"llm": {"providers": ["gemini"], "min_interval_seconds": 0, "models": {"gemini": "gemini-2.5-flash"}}})
     client = llm_mod.LLMClient(cfg, env={"GEMINI_API_KEY": "k"})
     assert client.chat("s", "u", json_mode=False) == "OK"
     assert calls == ["gemini-2.5-flash", "gemini-3.8-flash"]
+
+
+def test_recipients_are_cleaned_and_limited():
+    from agent.settings import normalize, parse_recipients
+
+    assert parse_recipients("a@x.co, b@x.co; A@x.co  bad c@x.co") == ["a@x.co", "b@x.co", "c@x.co"]
+    assert len(parse_recipients(" ".join(f"u{i}@x.co" for i in range(9)))) == 5
+    s = normalize({"email": {"to": "a@x.co,b@x.co", "send_when_empty": True}, "weekly": {"enabled": True, "day": 9}})
+    assert s["email"] == {"to": "a@x.co, b@x.co", "send_when_empty": True}
+    assert s["weekly"] == {"enabled": True, "day": 6}
+
+
+def test_weekly_roundup_picks_best_items_and_sends_once_a_day(tmp_path):
+    from datetime import datetime, timezone
+
+    from agent import weekly
+    from agent.settings import normalize
+
+    site = tmp_path / "site"
+    (site / "digests").mkdir(parents=True)
+    now = datetime(2026, 10, 18, 4, 0, tzinfo=timezone.utc)  # Sunday 09:30 IST
+    runs = []
+    for n, (day, score) in enumerate([(17, 9), (16, 7), (3, 10)]):
+        rid = f"r{n}"
+        ran = f"2026-10-{day:02d}T03:00:00+00:00"
+        runs.append({"id": rid, "ran_at": ran, "file": f"digests/{rid}.json"})
+        (site / "digests" / f"{rid}.json").write_text(json.dumps({"sections": [{"name": "AI", "items": [
+            {"title": f"t{n}", "url": "https://x.com/shared" if n < 2 else f"https://x.com/{n}", "summary": "s", "why": "w", "score": score},
+            {"title": "unscored", "url": f"https://x.com/u{n}", "summary": "s", "why": "", "score": None}]}]}))
+    (site / "index.json").write_text(json.dumps({"runs": runs}))
+    d = weekly.build(tmp_path, now)
+    urls = [i.url for s in d.sections for i in s.items]
+    assert urls == ["https://x.com/shared"]  # old run excluded, shared URL kept once at its best score
+    assert d.sections[0].items[0].score == 9.0
+
+    settings = normalize({"weekly": {"enabled": True, "day": 6}})
+    assert weekly.due_today(settings, tmp_path, now) is True
+    weekly.mark_sent(settings, tmp_path, now)
+    assert weekly.due_today(settings, tmp_path, now) is False
+    assert weekly.due_today(settings, tmp_path, datetime(2026, 10, 19, 4, 0, tzinfo=timezone.utc)) is False  # Monday
+
+
+def test_setup_check_reports_missing_and_failing_parts(monkeypatch):
+    from agent import check
+
+    monkeypatch.setattr(check, "search", lambda *a, **k: [])
+    cfg = _merge(DEFAULTS, {})
+    items = {c["id"]: c for c in check.run_checks(cfg, {})}
+    assert items["gmail"]["ok"] is False and "missing" in items["gmail"]["detail"]
+    assert items["llm-gemini"]["ok"] is None
+    assert items["llm-any"]["ok"] is False
+    assert items["search"]["ok"] is False

@@ -23,8 +23,8 @@ def last_run_at(data_dir: Path) -> datetime | None:
         return None
 
 
-def decide(event: str, force: bool, dry_run: bool, test_email: bool, data_dir: Path, now: datetime) -> tuple[bool, str]:
-    if event == "workflow_dispatch" and (force or dry_run or test_email):
+def decide(event: str, force: bool, dry_run: bool, test_email: bool, data_dir: Path, now: datetime, check: bool = False) -> tuple[bool, str]:
+    if event == "workflow_dispatch" and (force or dry_run or test_email or check):
         return True, "started by hand"
     settings = load_settings(data_dir / "settings.json")
     if settings["paused"]:
@@ -47,6 +47,7 @@ def main() -> int:
         bool(os.environ.get("INPUT_TEST_EMAIL_TO", "").strip()),
         Path(args.data),
         datetime.now(timezone.utc),
+        truthy(os.environ.get("INPUT_CHECK")),
     )
     print(f"gate: run={run} ({why})")
     out = os.environ.get("GITHUB_OUTPUT")

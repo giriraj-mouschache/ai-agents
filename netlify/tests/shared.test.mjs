@@ -47,3 +47,16 @@ test("nextSlot finds the next allowed day and time", () => {
   assert.equal(iso(nextSlot(Date.parse("2026-10-16T02:45:00Z"), sched)), "2026-10-16T12:30:00Z"); // Fri 08:15 IST -> 18:00 IST
   assert.equal(iso(nextSlot(Date.parse("2026-10-16T13:00:00Z"), sched)), "2026-10-19T02:30:00Z"); // Fri evening -> Monday 08:00 IST
 });
+
+test("validate handles several recipients, weekly roundup and empty-day option", () => {
+  const s = { paused: false, schedule: { times: ["08:00"], days: [0], timezone: "UTC" }, min_score: 6,
+    email: { to: "a@x.co, B@x.co;a@X.co", send_when_empty: true }, weekly: { enabled: true, day: 2 },
+    topics: [{ name: "T", queries: ["q"] }] };
+  const r = validateSettings(s);
+  assert.equal(r.settings.email.to, "a@x.co, B@x.co");
+  assert.equal(r.settings.email.send_when_empty, true);
+  assert.deepEqual(r.settings.weekly, { enabled: true, day: 2 });
+  assert.match(validateSettings({ ...s, email: { to: "a@x.co, nope" } }).error, /email/);
+  assert.match(validateSettings({ ...s, email: { to: "1@x.co 2@x.co 3@x.co 4@x.co 5@x.co 6@x.co" } }).error, /at most 5/);
+  assert.match(validateSettings({ ...s, weekly: { enabled: true, day: 9 } }).error, /weekly/);
+});

@@ -8,7 +8,7 @@ const RUN_ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 const S = {
   status: null, key: "", settings: null, saved: null, sha: null, nextRun: null, settingsNote: "",
-  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false,
+  index: null, digests: new Map(), selected: null, view: "digests", busy: "", locked: false, forceDirty: false, check: null,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -129,7 +129,7 @@ function render() {
   if (!S.status) return;
   if (!S.status.github_token || !S.status.admin_key) return main.append(setupView());
   if (S.locked || !S.settings) return main.append(unlockView());
-  main.append(S.view === "settings" ? settingsView() : digestsView());
+  main.append(S.view === "settings" ? settingsView() : S.view === "health" ? healthView() : digestsView());
 }
 
 function setupView() {
@@ -176,11 +176,26 @@ function unlockView() {
   return form;
 }
 
+function healthBanner() {
+  const last = S.index?.runs?.[0];
+  if (S.settings.paused) return banner("warn", "The agent is paused", "Nothing will run or be emailed until you press Resume.");
+  const aiDown = last?.status === "partial" && last.errors > 0 && last.items > 0 && !last.llm;
+  if (last?.status === "failed") return banner("bad", "The last run failed", "Open the Health tab and press Check my setup. It will tell you which key or setting needs fixing.", true);
+  if (aiDown) return banner("warn", "The last run could not use the AI", "Results were sent unranked. Open the Health tab and press Check my setup to find the broken key.", true);
+  const overdue = last && S.nextRun && Date.now() - Date.parse(last.ran_at) > 2.5 * 86400e3;
+  if (overdue) return banner("warn", "No run for a few days", "Press Run now. If it does not start, open the Health tab.", true);
+  return null;
+}
+function banner(tone, title, text, linkHealth) {
+  return h("div", { class: "notice", "data-tone": tone, role: "status" }, h("h3", { text: title }), h("p", { text }),
+    linkHealth ? h("p", {}, h("button", { type: "button", class: "btn", onclick: () => { S.view = "health"; render(); } }, "Open Health")) : null);
+}
+
 function digestsView() {
   const runs = S.index?.runs || [];
   if (!runs.length) {
-    return h("div", { class: "empty" }, h("h2", { text: "No results yet" }),
-      h("p", { text: S.nextRun && !S.settings.paused ? `The first run is scheduled for ${fmtWhen(S.nextRun)}. You can also press Run now.` : "Press Run now to get the first digest." }));
+    return h("div", {}, healthBanner(), h("div", { class: "empty" }, h("h2", { text: "No results yet" }),
+      h("p", { text: S.nextRun && !S.settings.paused ? `The first run is scheduled for ${fmtWhen(S.nextRun)}. You can also press Run now.` : "Press Run now to get the first digest." })));
   }
   const body = h("div", { id: "digest", tabindex: "-1" });
   const list = h("ol", { class: "runs" });
@@ -199,7 +214,9 @@ function digestsView() {
   }
   const wanted = runs.find((r) => r.id === S.selected) || runs[0];
   queueMicrotask(() => select(wanted.id, false));
-  return h("div", { class: "runs-layout" }, body, rail);
+  const b = healthBanner();
+  const layout = h("div", { class: "runs-layout" }, body, rail);
+  return b ? h("div", {}, b, layout) : layout;
 }
 
 async function showDigest(el, run, focus) {
@@ -216,7 +233,7 @@ async function showDigest(el, run, focus) {
   const [word] = RUN_STATE(run);
   const kids = [h("div", { class: "digest-head" },
     h("h2", { text: fmtWhen(d.ran_at) }),
-    h("p", { text: `${word}. ${d.sections.reduce((n, s) => n + s.items.length, 0)} items found.${d.kind === "workflow_dispatch" ? " Started by hand or by the timer." : ""}` }))];
+    h("p", { text: `${word}. ${(() => { const n = d.sections.reduce((a, x) => a + x.items.length, 0); return `${n} item${n === 1 ? "" : "s"} found.`; })()}${d.llm ? ` Summarised by ${d.llm}.` : ""}` }))];
   if (d.error || d.status === "failed") {
     kids.push(h("div", { class: "notice", "data-tone": "bad" }, h("h3", { text: "This run did not finish properly" }), h("p", { text: explainError(d.error) || "Something went wrong. Try Run now again." })));
   }
@@ -235,6 +252,30 @@ async function showDigest(el, run, focus) {
   if (d.errors?.length) kids.push(h("div", { class: "notice", "data-tone": "warn" }, h("h3", { text: "Small problems during this run" }), h("ul", {}, d.errors.map((x) => h("li", { text: x })))));
   el.replaceChildren(...kids);
   if (focus) el.focus();
+}
+
+// ---------- health ----------
+function healthView() {
+  const c = S.check;
+  const mark = (ok) => (ok === true ? ["✓", "Working", "ok"] : ok === false ? ["✕", "Problem", "bad"] : ["–", "Not set", "none"]);
+  const list = c?.checks?.length
+    ? h("ul", { class: "checks" }, c.checks.map((x) => { const [sym, word, tone] = mark(x.ok);
+        return h("li", { class: "check", "data-tone": tone }, h("span", { class: "sym", "aria-hidden": "true", text: sym }),
+          h("div", {}, h("b", {}, x.label, h("span", { class: "sr", text: `: ${word}` })), h("p", { text: x.detail }))); }))
+    : h("p", { class: "hint", text: "No check has been run yet. Press the button to test everything in about a minute." });
+  return h("section", { class: "card" }, h("h2", { text: "Is everything working?" }),
+    h("p", { class: "hint", text: "This tests your Gmail login, each AI key and web search. It sends no email and costs nothing." }),
+    h("div", { class: "body" }, h("p", {}, h("button", { type: "button", class: "btn primary", id: "btn-check", disabled: Boolean(S.busy), onclick: runCheck }, "Check my setup")),
+      c?.ran_at ? h("p", { class: "help", text: `Last checked ${fmtWhen(c.ran_at)}.` }) : null, list,
+      h("p", { class: "help", text: "Keys are changed in GitHub: Settings, Secrets and variables, Actions. Never paste a key into this page or into chat." })));
+}
+
+async function loadCheck() { try { S.check = await api("data?file=check"); } catch { /* shown as not run yet */ } }
+
+async function runCheck() {
+  const since = Date.now();
+  try { await api("check", { method: "POST" }); } catch (e) { return toast(e.message, "bad", true); }
+  track("Checking your setup.", since, "Check finished. Results are below.", { view: "health", after: loadCheck });
 }
 
 // ---------- settings ----------
@@ -282,7 +323,10 @@ function settingsView() {
   drawTopics();
 
   // Email + strictness
-  const to = h("input", { type: "email", id: "to", value: s.email.to, placeholder: "Use the address set in GitHub", autocomplete: "email", oninput: (e) => { s.email.to = e.target.value.trim(); touch(); } });
+  const to = h("input", { type: "text", inputmode: "email", id: "to", value: s.email.to, placeholder: "Use the address set in GitHub", autocomplete: "email", oninput: (e) => { s.email.to = e.target.value.trim(); touch(); } });
+  const empty = h("input", { type: "checkbox", id: "empty", checked: s.email.send_when_empty, onchange: (e) => { s.email.send_when_empty = e.target.checked; touch(); } });
+  const wk = h("input", { type: "checkbox", id: "wk", checked: s.weekly.enabled, onchange: (e) => { s.weekly.enabled = e.target.checked; wkDay.disabled = !e.target.checked; touch(); } });
+  const wkDay = h("select", { id: "wkday", "aria-label": "Day for the weekly roundup", disabled: !s.weekly.enabled, onchange: (e) => { s.weekly.day = Number(e.target.value); touch(); } }, DAYS.map((d, i) => h("option", { value: i, selected: i === s.weekly.day, text: d })));
   const out = h("output", { for: "ms", text: String(s.min_score) });
   const label = h("p", { class: "help", style: "margin-top:8px" });
   const setLabel = () => { label.textContent = s.min_score <= 4 ? "Loose: you get more results, some less relevant." : s.min_score <= 7 ? "Balanced: a good mix. Most people keep it here." : "Strict: only the very best matches, you may get fewer emails."; };
@@ -297,7 +341,9 @@ function settingsView() {
         h("div", { class: "field" }, h("label", { for: "tz", text: "Time zone" }), tzSel), summary)),
     h("section", { class: "card" }, h("h2", { text: "What should it research?" }), h("p", { class: "hint", text: "Each topic becomes its own section in your email." }), h("div", { class: "body" }, topicsBox)),
     h("section", { class: "card" }, h("h2", { text: "Where should the email go?" }), h("p", { class: "hint", text: "Digests are sent from the Gmail account you set up in GitHub." }),
-      h("div", { class: "body" }, h("div", { class: "field" }, h("label", { for: "to", text: "Send to" }), to),
+      h("div", { class: "body" }, h("div", { class: "field" }, h("label", { for: "to" }, "Send to", h("span", { class: "help", text: "Up to 5 addresses, separated by commas." })), to),
+        h("div", { class: "field" }, h("label", { class: "check-row", for: "empty" }, empty, h("span", {}, "Email me even when nothing new is found", h("span", { class: "help", text: "Off by default, so you only get an email when there is something to read." })))),
+        h("div", { class: "field" }, h("label", { class: "check-row", for: "wk" }, wk, h("span", {}, "Also send a weekly roundup", h("span", { class: "help", text: "The best items from the past 7 days, sent after that day's digest." }))), h("div", { style: "margin-top:8px" }, wkDay)),
         h("p", {}, h("button", { type: "button", class: "btn", id: "btn-test", onclick: () => sendTest(to.value.trim()) }, "Send a test email")))),
     h("section", { class: "card" }, h("h2", { text: "How picky should it be?" }), h("p", { class: "hint", text: "The AI gives every result a relevance score from 1 to 10. Only results at or above this number are emailed." }),
       h("div", { class: "body" }, h("label", { for: "ms", text: "Minimum relevance" }), h("div", { class: "range" }, ms, out), label)),
@@ -346,7 +392,7 @@ async function togglePause() {
   render();
 }
 
-async function track(label, since, doneText) {
+async function track(label, since, doneText, { view = "digests", after } = {}) {
   S.busy = label; render();
   const deadline = Date.now() + 15 * 60e3;
   let seen = false;
@@ -362,7 +408,8 @@ async function track(label, since, doneText) {
         await loadIndex();
         if (run.conclusion === "success") toast(doneText);
         else toast("The run did not finish properly. Open the newest result for details.", "bad", true);
-        S.selected = null; S.view = label.startsWith("Sending") ? S.view : "digests";
+        if (after) await after();
+        S.selected = null; S.view = view;
         return render();
       }
       S.busy = run.status === "queued" ? `${label} Waiting for GitHub to start.` : `${label} Working on it.`; renderHeader();
@@ -383,7 +430,7 @@ async function sendTest(to) {
   if (!to) return toast("Type an email address first, then press the button.", "bad");
   const since = Date.now();
   try { await api("test-email", { method: "POST", body: { to } }); } catch (e) { return toast(e.message, "bad", true); }
-  track("Sending a test email.", since, `Test email sent to ${to}. Check the inbox (and spam) in a minute.`);
+  track("Sending a test email.", since, `Test email sent to ${to}. Check the inbox (and spam) in a minute.`, { view: S.view });
 }
 
 // ---------- boot ----------
@@ -413,7 +460,10 @@ async function boot() {
   render();
 }
 
-document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", () => { S.view = b.dataset.tab; render(); }));
+document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", async () => {
+  S.view = b.dataset.tab; render();
+  if (S.view === "health" && !S.check) { await loadCheck(); if (S.view === "health") render(); }
+}));
 $("#btn-pause").addEventListener("click", togglePause);
 $("#btn-run").addEventListener("click", runNow);
 boot();

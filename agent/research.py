@@ -73,6 +73,10 @@ def _build_prompt(topic: dict, batch: list[Candidate], today: str) -> str:
         "Candidates:\n\n" + "\n\n".join(blocks) + "\n\n"
         "For EVERY candidate decide whether it is relevant, recent and genuinely useful for the reader.\n"
         "Score 0-10: 9-10 = must read, 6-8 = worth a look, 0-5 = off-topic, stale, thin or promotional.\n"
+        "Pages that are only an index, directory, job-board listing, tag page, 'best of' roundup or tool catalogue "
+        "with no single specific, recent item the reader can act on score at most 4.\n"
+        "For leads, jobs, deals or opportunities, the summary must state the concrete details that appear in the text "
+        "(who, what is needed, pay or budget, date posted, how to apply) and must not invent any that are missing.\n"
         "Return JSON in exactly this shape:\n"
         '{"items": [{"id": <candidate id>, "score": <0-10>, "summary": "2-3 factual sentences", '
         '"why_it_matters": "one sentence for this reader"}], '

@@ -16,7 +16,8 @@ DEFAULT_SETTINGS: dict = {
     "version": 1,
     "paused": False,
     "schedule": {"times": ["08:00"], "days": [0, 1, 2, 3, 4, 5, 6], "timezone": "Asia/Kolkata"},
-    "email": {"to": ""},
+    "email": {"to": "", "send_when_empty": False},
+    "weekly": {"enabled": False, "day": 6},
     "min_score": 6,
     "topics": [],
 }
@@ -28,6 +29,18 @@ def _tz_ok(name: str) -> bool:
         return True
     except Exception:
         return False
+
+
+MAX_RECIPIENTS = 5
+
+
+def parse_recipients(value) -> list[str]:
+    """Valid, unique addresses from a comma/semicolon/space separated string (at most 5)."""
+    found = []
+    for part in re.split(r"[,;\s]+", str(value or "")):
+        if part and EMAIL_RE.match(part) and part.lower() not in [f.lower() for f in found]:
+            found.append(part)
+    return found[:MAX_RECIPIENTS]
 
 
 def normalize(raw) -> dict:
@@ -49,8 +62,14 @@ def normalize(raw) -> dict:
         out["schedule"]["timezone"] = tz
 
     email = raw.get("email") if isinstance(raw.get("email"), dict) else {}
-    to = str(email.get("to") or "").strip()
-    out["email"]["to"] = to if EMAIL_RE.match(to) else ""
+    out["email"]["to"] = ", ".join(parse_recipients(email.get("to")))
+    out["email"]["send_when_empty"] = email.get("send_when_empty") is True
+
+    weekly = raw.get("weekly") if isinstance(raw.get("weekly"), dict) else {}
+    out["weekly"]["enabled"] = weekly.get("enabled") is True
+    wd = weekly.get("day")
+    if isinstance(wd, int) and not isinstance(wd, bool) and 0 <= wd <= 6:
+        out["weekly"]["day"] = wd
 
     ms = raw.get("min_score")
     if isinstance(ms, int) and not isinstance(ms, bool) and 1 <= ms <= 10:
@@ -96,6 +115,7 @@ def apply_settings(cfg: dict, settings: dict) -> dict:
     if settings["topics"]:
         cfg["topics"] = copy.deepcopy(settings["topics"])
     cfg["research"]["min_score"] = settings["min_score"]
+    cfg["email"]["send_when_empty"] = settings["email"]["send_when_empty"]
     cfg["site"]["schedule_label"] = schedule_label(settings["schedule"])
     cfg["site"]["schedule_ist"] = settings["schedule"]["times"][0]
     return cfg

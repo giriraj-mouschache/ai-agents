@@ -82,6 +82,15 @@ test("run and test-email start the workflow with the right inputs", async () => 
   assert.equal(p.runs[0].event, "workflow_dispatch");
 });
 
+test("check route starts the setup check and its result is served", async () => {
+  gh.dispatches.length = 0;
+  assert.equal((await call("check", { method: "POST" })).status, 200);
+  assert.deepEqual(gh.dispatches.at(-1), { check: "true" });
+  assert.deepEqual(await (await call("data?file=check")).json(), { checks: [] });
+  gh.put("site/check.json", JSON.stringify({ checks: [{ id: "gmail", ok: true }] }));
+  assert.equal((await (await call("data?file=check")).json()).checks[0].id, "gmail");
+});
+
 test("a bad GitHub token is reported clearly, not leaked", async () => {
   const saved = gh.vars.GITHUB_TOKEN;
   gh.vars.GITHUB_TOKEN = "ghp_wrong";

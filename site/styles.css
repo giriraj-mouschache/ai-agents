@@ -147,3 +147,31 @@ code { padding: 0.08em 0.4em; border-radius: 4px; background: var(--tint); font-
 .state[data-tone="ok"] { color: var(--ok); }
 .state[data-tone="warn"] { color: var(--warn); }
 .state[data-tone="bad"] { color: var(--bad); }
+
+/* Health */
+.checks { margin: 18px 0 0; padding: 0; list-style: none; }
+.check { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--rule); }
+.check .sym { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--rule); color: var(--ink); }
+.check[data-tone="ok"] .sym { background: var(--ok); color: var(--card); }
+.check[data-tone="bad"] .sym { background: var(--bad); color: var(--card); }
+.check p { margin: 2px 0 0; color: var(--ink-2); max-width: 62ch; overflow-wrap: anywhere; }
+.check-row { display: flex; gap: 12px; align-items: flex-start; font-weight: 600; cursor: pointer; }
+.check-row input { flex: none; width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--accent); }
+.check-row .help { margin-top: 2px; }
+
+/* Phones: one column, big targets, nav stays reachable */
+@media (max-width: 639px) {
+  .shell { padding-top: 18px; }
+  .title-row { gap: 10px; }
+  .actions { width: 100%; }
+  .actions .btn { flex: 1; }
+  .tabs { position: sticky; top: 0; z-index: 6; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); background: var(--ground); }
+  .tabs button { flex: 1; padding-inline: 8px; }
+  .topic-head { flex-wrap: wrap; }
+  .card { padding: 18px 16px; }
+  .btn { width: auto; }
+  .savebar .btn { flex: 1; }
+  .time-row input[type="time"] { min-width: 9rem; }
+}
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
