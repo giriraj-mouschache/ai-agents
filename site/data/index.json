@@ -1,0 +1,28 @@
+{
+ "version": 1,
+ "repo": "giriraj-mouschache/ai-agents",
+ "schedule": {
+  "label": "Daily at 8:00 AM IST",
+  "time_ist": "08:00"
+ },
+ "topics": [
+  {
+   "name": "AI and LLM engineering",
+   "goal": "New releases, techniques and tools for building LLM applications and agents that a working software engineer could use. Skip hype, funding news and generic listicles.",
+   "queries": [
+    "new open source LLM agent framework release",
+    "LLM agents production lessons learned",
+    "free tier LLM API changes"
+   ]
+  },
+  {
+   "name": "Remote freelance software leads",
+   "goal": "Concrete, recent opportunities for remote freelance or contract software work (web, backend, automation, AI integrations): job posts, hiring threads and clients asking for developers. Skip generic \"how to freelance\" advice and expired posts.",
+   "queries": [
+    "remote freelance developer contract hiring this week",
+    "looking for freelance developer automation AI integration"
+   ]
+  }
+ ],
+ "runs": []
+}

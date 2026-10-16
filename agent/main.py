@@ -6,18 +6,18 @@ import logging
 import os
 import re
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
 
 from .config import load_config
 from .emailer import Digest, make_subject, render_html, render_text, send_email
+from .history import IST, record_run
 from .llm import LLMClient
 from .research import Item, TopicResult, make_tldr, run_topic
 from .store import SeenStore
 
 log = logging.getLogger("agent")
 
-IST = timezone(timedelta(hours=5, minutes=30))
 EMAIL_RE = re.compile(r"^[^@\s,;<>\"']+@[^@\s,;<>\"']+\.[^@\s,;<>\"']+$")
 
 
@@ -125,11 +125,38 @@ def main(argv: list[str] | None = None) -> int:
         log.info("Dry run: wrote out/digest.html (%d items, %d errors)", digest.item_count, len(errors))
         return 1 if errors and not results else 0
 
+    emailed = False
+    send_error: Exception | None = None
     if digest.item_count or errors or cfg["email"]["send_when_empty"]:
-        send_email(make_subject(cfg["email"]["subject_prefix"], digest), render_html(digest), render_text(digest))
-        log.info("Digest emailed (%d items)", digest.item_count)
+        try:
+            send_email(make_subject(cfg["email"]["subject_prefix"], digest), render_html(digest), render_text(digest))
+            emailed = True
+            log.info("Digest emailed (%d items)", digest.item_count)
+        except Exception as exc:
+            send_error = exc
+            log.error("Sending the digest failed: %s", type(exc).__name__)
     else:
         log.info("Nothing new; no email sent")
+
+    # Record the run for the dashboard, failures included, so a bad or missed day is visible there.
+    status = "failed" if send_error else ("partial" if errors else "ok")
+    try:
+        record_run(
+            cfg["site"]["data_dir"],
+            cfg,
+            digest,
+            status=status,
+            emailed=emailed,
+            llm_name=llm.last_backend,
+            kind=os.environ.get("GITHUB_EVENT_NAME", "local"),
+            repo=os.environ.get("GITHUB_REPOSITORY", ""),
+            error=type(send_error).__name__ if send_error else "",
+        )
+    except OSError:
+        log.exception("Could not write dashboard data")
+
+    if send_error:
+        raise send_error
 
     # Only remember URLs after the email went out, so a failed send is retried next run.
     for r in results:

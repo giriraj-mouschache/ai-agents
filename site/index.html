@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Daily web research, scored and summarized, with a history of every run.">
+  <title>Research digest</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='16' width='5' height='11' rx='1' fill='%231f4fd8'/%3E%3Crect x='13.5' y='6' width='5' height='21' rx='1' fill='%231f4fd8'/%3E%3Crect x='22' y='11' width='5' height='16' rx='1' fill='%231f4fd8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#digest">Skip to the digest</a>
+
+  <div class="shell">
+    <header class="masthead">
+      <h1>Research digest</h1>
+      <p id="status" class="status" role="status">Loading the latest run.</p>
+    </header>
+
+    <section class="cadence" aria-labelledby="cadence-title">
+      <div class="cadence-head">
+        <h2 id="cadence-title">Last 30 days</h2>
+        <ul class="legend" aria-label="Bar colors">
+          <li><span class="swatch" data-tone="ok"></span>Emailed</li>
+          <li><span class="swatch" data-tone="warn"></span>Ran with errors</li>
+          <li><span class="swatch" data-tone="bad"></span>Failed</li>
+          <li><span class="swatch" data-tone="none"></span>No run</li>
+        </ul>
+      </div>
+      <ol id="strip" class="strip" aria-label="One bar per day. Taller means more new items."></ol>
+    </section>
+
+    <div class="layout">
+      <main id="digest" class="digest" tabindex="-1"></main>
+
+      <aside class="rail" aria-label="Run history and topics">
+        <section aria-labelledby="runs-title">
+          <h2 id="runs-title">Runs</h2>
+          <ol id="runs" class="runs"></ol>
+        </section>
+        <section aria-labelledby="topics-title">
+          <h2 id="topics-title">Topics tracked</h2>
+          <div id="topics"></div>
+          <ul id="links" class="links"></ul>
+          <p id="updated" class="updated"></p>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

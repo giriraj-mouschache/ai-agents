@@ -40,6 +40,13 @@ DEFAULTS: dict[str, Any] = {
         "path": "state/seen.json",
         "keep_days": 90,
     },
+    "site": {
+        "data_dir": "site/data",
+        # Shown on the dashboard. Keep in sync with the cron line in .github/workflows/research-agent.yml.
+        "schedule_label": "Daily at 8:00 AM IST",
+        "schedule_ist": "08:00",
+        "keep_runs": 90,
+    },
     "topics": [],
 }
 

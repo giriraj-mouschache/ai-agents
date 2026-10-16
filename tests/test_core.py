@@ -164,6 +164,37 @@ def test_send_email_uses_app_password_without_spaces(monkeypatch):
         send_email("s", "h", "t", env={})
 
 
+def test_record_run_writes_digest_and_prunes(tmp_path):
+    from datetime import datetime, timezone
+
+    from agent.history import record_run
+
+    cfg = _merge(
+        DEFAULTS,
+        {"topics": [{"name": "T", "goal": "g\n  more", "queries": ["q"]}], "site": {"keep_runs": 2}},
+    )
+    item = Item("T", "Title", "https://a.com/x", "sum", "why", 8)
+    digest = Digest(date="2026-10-16", sections=[TopicResult("T", [item])], errors=[])
+    for day in (14, 15, 16):
+        record_run(
+            tmp_path,
+            cfg,
+            digest,
+            status="ok",
+            emailed=True,
+            llm_name="gemini",
+            kind="schedule",
+            repo="o/r",
+            now=datetime(2026, 10, day, 2, 33, tzinfo=timezone.utc),
+        )
+    index = json.loads((tmp_path / "index.json").read_text())
+    assert [r["date"] for r in index["runs"]] == ["2026-10-16", "2026-10-15"]  # newest first, pruned to 2
+    assert index["repo"] == "o/r" and index["topics"][0]["goal"] == "g more"
+    assert not (tmp_path / "digests" / "20261014T023300Z.json").exists()
+    saved = json.loads((tmp_path / index["runs"][0]["file"]).read_text())
+    assert saved["sections"][0]["items"][0]["domain"] == "a.com" and saved["llm"] == "gemini"
+
+
 @pytest.mark.parametrize(
     "url",
     ["http://127.0.0.1/", "http://169.254.169.254/latest/meta-data", "file:///etc/passwd", "ftp://example.com/x", "http://10.0.0.5/"],

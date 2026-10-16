@@ -77,6 +77,7 @@ class LLMClient:
         self.min_interval = float(llm_cfg["min_interval_seconds"])
         self.timeout = float(llm_cfg["timeout_seconds"])
         self._last_call = 0.0
+        self.last_backend: str | None = None  # name of the provider that answered most recently
         self.backends: list[Backend] = []
         for name in llm_cfg["providers"]:
             spec = PROVIDERS.get(name)
@@ -110,7 +111,9 @@ class LLMClient:
         last: Exception | None = None
         for backend in self.backends:
             try:
-                return self._call(backend, system, user, json_mode, temperature, max_tokens)
+                text = self._call(backend, system, user, json_mode, temperature, max_tokens)
+                self.last_backend = backend.name
+                return text
             except LLMError as exc:
                 log.warning("LLM backend %s failed: %s", backend.name, exc)
                 last = exc

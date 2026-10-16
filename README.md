@@ -39,6 +39,23 @@ cron (GitHub Actions) -> search (Tavily or DuckDuckGo) -> fetch pages (trafilatu
 Never put the Gmail password or API keys in `config.yaml`, in code, or in chat. Secrets belong only in GitHub Secrets
 (or a local `.env`, which is git-ignored).
 
+## Dashboard
+
+`site/` is a small static dashboard: a 30-day strip showing whether each run happened, the latest digest with scores,
+the run history, and the topics being tracked. Every real run (including failed ones) writes its results to
+`site/data/` and commits them, so the page keeps itself up to date.
+
+Host it on Netlify. There is no build step, and `netlify.toml` already points at the `site` folder:
+
+1. In Netlify choose *Add new project -> Import an existing project -> GitHub* and pick this repo.
+2. Leave the build command empty. The publish directory comes from `netlify.toml`.
+3. From then on, each data commit redeploys the page.
+
+Preview it locally with `cd site && python3 -m http.server`, then open <http://localhost:8000>.
+
+Anyone with the site link can read the digests, so treat the URL as public. If Netlify shows "Pending approval" on the
+bot's commits (this can happen with private repos), approve it once, or trigger deploys with a Netlify build hook.
+
 ## Schedule
 
 The cron line in `.github/workflows/research-agent.yml` is in UTC. The default `30 2 * * *` is 08:00 IST daily.
