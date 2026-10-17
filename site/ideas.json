@@ -1,21 +1,93 @@
 {
  "version": 1,
- "last_scout": "2026-10-16",
+ "last_scout": "2026-10-17",
  "radar": [
   {
    "area": "AI and software engineering",
-   "note": "AI job postings grew 74% year‑over‑year in 2025, with Machine Learning Engineer and AI Engineer roles seeing the highest demand (source 3)."
+   "note": "Enterprise AI is transitioning from experimental trials to foundational infrastructure, highlighted by the rapid emergence of agentic software development and human-agent engineering teams."
   },
   {
    "area": "Remote and freelance work",
-   "note": "The global freelance platforms market is projected to reach $21.97 billion by 2031, expanding at a CAGR of roughly 16% (source 4)."
+   "note": "Major remote-first firms are maintaining large volumes of open listings while independent workers increasingly leverage specialized platforms and short-turnaround gig models to avoid long sales cycles."
   },
   {
    "area": "Startups and market trends",
-   "note": "No specific evidence about startups or market trends was provided in the supplied sources."
+   "note": "Venture funding remains intensely concentrated in early-stage artificial intelligence and automation startups, which command the majority of recent seed rounds and venture capital volume."
   }
  ],
  "ideas": [
+  {
+   "id": "d6197c9436",
+   "name": "Agentic Software Development Workflows",
+   "area": "AI and software engineering",
+   "why": "McKinsey identified agentic software development as a defining emerging domain for 2026, shifting engineering management toward orchestrating human-agent teams. Tracking this trend highlights the specific architectures and tools enabling autonomous code generation and maintenance.",
+   "goal": "Identify operational tools, frameworks, and architectural best practices for deploying autonomous AI agents in software engineering workflows.",
+   "queries": [
+    "agentic software development tools 2026",
+    "human-agent teams software development",
+    "autonomous coding agent frameworks enterprise"
+   ],
+   "confidence": 9.0,
+   "sources": [
+    {
+     "title": "Emerging Tech Trends October 2026: AI, Quantum & Security",
+     "url": "https://www.accio.com/business/emerging-technology-trends-october-2026"
+    },
+    {
+     "title": "Technology Trends Outlook 2026 - McKinsey & Company",
+     "url": "https://www.mckinsey.com/~/media/mckinsey/business+functions/mckinsey+digital/our+insights/the+top+trends+in+tech+2026/mckinsey+technology+trends+outlook+2026_vf"
+    }
+   ],
+   "created": "2026-10-17"
+  },
+  {
+   "id": "68cef48ad9",
+   "name": "Short-Cycle High-Yield Freelance Gigs",
+   "area": "Remote and freelance work",
+   "why": "Freelancers are adopting fast-turnaround micro-engagements and vetted platform networks to generate immediate revenue without enduring six-month client acquisition cycles. Tracking this trend surfaces pricing standards and platform dynamics for rapid remote income.",
+   "goal": "Uncover proven platforms, pricing benchmarks, and service types optimized for fast-turnaround freelance contracts.",
+   "queries": [
+    "quick gigs for money freelance 2026",
+    "fast turnaround high paying freelance jobs",
+    "vetted freelance platform pricing models"
+   ],
+   "confidence": 8.0,
+   "sources": [
+    {
+     "title": "33 Remote-Friendly Jobs to Consider (With Tips) - Indeed19 Easy Remote Jobs That Pay Well in 2026 - Pearl Talent30 best ",
+     "url": "https://www.indeed.com/career-advice/finding-a-job/best-remote-jobs"
+    }
+   ],
+   "created": "2026-10-17"
+  },
+  {
+   "id": "e08740da53",
+   "name": "Early-Stage AI and Automation Venture Rounds",
+   "area": "Startups and market trends",
+   "why": "AI-focused startups captured over 57% of venture capital funding in early 2026, with seed-stage deals in AI and robotics leading recent investment activity. Tracking these capital inflows uncovers high-conviction product categories and emerging enterprise use cases.",
+   "goal": "Monitor newly closed seed and early-stage funding rounds in AI and automation to identify high-momentum business models.",
+   "queries": [
+    "seed stage AI startup funding rounds 2026",
+    "AI robotics venture capital deals October 2026",
+    "trending funded enterprise automation startups"
+   ],
+   "confidence": 9.0,
+   "sources": [
+    {
+     "title": "Trending AI Topics October 2026: What's Next? - accio.com",
+     "url": "https://www.accio.com/business/trending-ai-topics-october-2026"
+    },
+    {
+     "title": "Top 100 Business Trends in October: From CPG Investment ...",
+     "url": "https://www.trendhunter.com/slideshow/october-2026-business"
+    },
+    {
+     "title": "Trending Startups (October 2026) - 200 Recently Funded | VCBacked",
+     "url": "https://www.vcbacked.co/trending-startups"
+    }
+   ],
+   "created": "2026-10-17"
+  },
   {
    "id": "8dd72532ad",
    "name": "AI Engineer Salary Surge",
